@@ -47,6 +47,12 @@ const UserSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  resetToken: {
+    type: String
+  },
+  resetTimeout: {
+    type: Date
+  }
 });
 
 module.exports = mongoose.model("User", UserSchema);

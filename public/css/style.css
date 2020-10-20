@@ -31,3 +31,11 @@ p {
 .form-control {
   padding-left: 5px !important;
 }
+
+.bottom-margin {
+  margin-bottom: 30px;
+}
+
+.helper-text {
+  float: right;
+}
