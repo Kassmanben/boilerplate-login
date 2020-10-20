@@ -10,6 +10,7 @@
   "author": "Ben Kassman",
   "license": "MIT",
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "connect-mongo": "^3.2.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
@@ -20,7 +21,8 @@
     "mongoose": "^5.10.9",
     "morgan": "^1.10.0",
     "passport": "^0.4.1",
-    "passport-google-oauth20": "^2.0.0"
+    "passport-google-oauth20": "^2.0.0",
+    "passport-local": "^1.0.0"
   },
   "devDependencies": {
     "cross-env": "^7.0.2",

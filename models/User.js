@@ -5,6 +5,17 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  profileType: {
+    type: String,
+    required: true,
+    enum: ["google", "local"],
+  },
+  permissions: {
+    type: String,
+    required: true,
+    default: "personal",
+    enum: ["admin", "personal"],
+  },
   displayName: {
     type: String,
     required: true,
@@ -19,6 +30,18 @@ const UserSchema = new mongoose.Schema({
   },
   image: {
     type: String,
+  },
+  email: {
+    type: String,
+    required: function () {
+      return this.profileType == "local";
+    },
+  },
+  password: {
+    type: String,
+    required: function () {
+      return this.profileType == "local";
+    },
   },
   createdAt: {
     type: Date,
