@@ -3,6 +3,7 @@ const router = express.Router();
 const bcrypt = require("bcryptjs");
 const passport = require("passport");
 const mongoose = require("mongoose");
+const constants = require("../public/constants/constants");
 var mandrill = require("mandrill-api/mandrill");
 var mandrill_client = new mandrill.Mandrill(process.env.MANDRILL);
 
@@ -34,86 +35,112 @@ router.get("/forgot", ensureGuest, (req, res) =>
 // @route GET /reset/:id
 router.get("/reset/:id", ensureGuest, async (req, res) => {
   try {
-    const user = await User.findOne({
-      resetToken: new mongoose.Types.ObjectId(req.params.id),
-    }).lean();
+    if (req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+      const user = await User.findOne({
+        resetToken: new mongoose.Types.ObjectId(req.params.id),
+      }).lean();
 
-    if (!user) {
+      if (!user) {
+        req.session.sessionFlash = {
+          type: "alert-warning",
+          message: constants.FLASH_MESSAGES.REDIRECT_ERRORS.INVALID_LINK,
+        };
+        return res.redirect("/");
+      }
+
+      if (moment(user.resetTimeout).isBefore(moment())) {
+        res.redirect("/");
+      } else {
+        res.render("reset", {
+          layout: "login",
+          user,
+        });
+      }
+    } else {
+      req.session.sessionFlash = {
+        type: "alert-warning",
+        message: constants.FLASH_MESSAGES.REDIRECT_ERRORS.INVALID_LINK,
+      };
       return res.redirect("/");
     }
-
-    if (moment(user.resetTimeout).isBefore(moment())) {
-      res.redirect("/");
-    } else {
-      res.render("reset", {
-        layout: "login",
-        user,
-      });
-    }
   } catch (err) {
+    req.session.sessionFlash = {
+      type: "alert-danger",
+      message: constants.FLASH_MESSAGES.REDIRECT_ERRORS.GENERIC_ERROR,
+    };
     console.error(err);
-    res.redirect("error/500");
+    res.redirect("/");
   }
 });
 
-router.post("/forgot", async (req, res) => {
+router.post("/forgot", ensureGuest, async (req, res) => {
+  // TODO: Add validation to make sure this is an email
   const { email } = req.body;
   let resetToken = new mongoose.Types.ObjectId();
-  User.findOneAndUpdate(
-    { email: email },
-    {
+
+  const user = await User.findOne({
+    email: email,
+  });
+
+  if (!user) {
+    req.session.sessionFlash = {
+      type: "alert-success",
+      message:
+        constants.FLASH_MESSAGES.REDIRECT_SUCCESSES.FORGOT_PASSWORD_SUBMISSION,
+    };
+    console.error("User does not exist");
+    return res.redirect("/");
+  } else {
+    user.set({
       resetToken: resetToken,
       resetTimeout: moment().add(1, "hours"),
-    },
-    (err, user) => {
-      if (err) {
-        console.error(err);
-        return res.render("error/500");
-      } else {
-        let link = "http://localhost:3000/users/reset/" + resetToken;
-        let text =
-          "We've recieved a password change request for your Storybooks account. </p><p> If you did not ask to change your password, then you can ignore this email and your password will not be changed. The link below will remain active for 1 hour.";
-        var message = {
-          html:
-            "<p>" +
-            text +
-            "</p>" +
-            '<a href="' +
-            link +
-            '" > Reset your password here </a>',
-          text: text.replace("</p><p> ", "") + " " + link,
-          subject: "Storybooks password change request",
-          from_email: "me@kassmanben.com",
-          from_name: "Storybooks",
-          to: [
-            {
-              email: user.email,
-              name: user.displayName,
-              type: "to",
-            },
-          ],
-        };
-        var async = false;
-        var ip_pool = "Main Pool";
-        mandrill_client.messages.send(
-          {
-            message: message,
-            async: async,
-            ip_pool: ip_pool,
-          },
-          function (result) {
-            console.log(result);
-          },
-          function (e) {
-            console.log(
-              "A mandrill error occurred: " + e.name + " - " + e.message
-            );
-          }
-        );
-        return res.redirect("/");
+    });
+    user.save();
+    let link = "http://localhost:3000/users/reset/" + resetToken;
+    let text =
+      "We've recieved a password change request for your Storybooks account. </p><p> If you did not ask to change your password, then you can ignore this email and your password will not be changed. The link below will remain active for 1 hour.";
+    var message = {
+      html:
+        "<p>" +
+        text +
+        "</p>" +
+        '<a href="' +
+        link +
+        '" > Reset your password here </a>',
+      text: text.replace("</p><p> ", "") + " " + link,
+      subject: "Storybooks password change request",
+      from_email: "me@kassmanben.com",
+      from_name: "Storybooks",
+      to: [
+        {
+          email: user.email,
+          name: user.displayName,
+          type: "to",
+        },
+      ],
+    };
+    var async = false;
+    var ip_pool = "Main Pool";
+    mandrill_client.messages.send(
+      {
+        message: message,
+        async: async,
+        ip_pool: ip_pool,
+      },
+      function (result) {
+        console.log(result);
+      },
+      function (e) {
+        console.log("A mandrill error occurred: " + e.name + " - " + e.message);
       }
-    }
-  );
+    );
+    req.session.sessionFlash = {
+      type: "alert-success",
+      message:
+        constants.FLASH_MESSAGES.REDIRECT_SUCCESSES.FORGOT_PASSWORD_SUBMISSION,
+    };
+    return res.redirect("/");
+  }
 });
 
 // Register

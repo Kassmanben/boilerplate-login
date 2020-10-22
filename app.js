@@ -1,16 +1,19 @@
-const express = require("express");
+const cookieParser = require("cookie-parser");
 const dotenv = require("dotenv");
-const morgan = require("morgan");
-const path = require("path");
+const express = require("express");
 const exphbs = require("express-handlebars");
-const methodOverride = require("method-override");
-const session = require("express-session");
-const passport = require("passport");
+const flash = require("express-flash");
 const mongoose = require("mongoose");
+const morgan = require("morgan");
+const methodOverride = require("method-override");
+const passport = require("passport");
+const path = require("path");
+const session = require("express-session");
+
 const MongoStore = require("connect-mongo")(session);
 const connectDB = require("./config/db");
 
-//Load config
+// Load config, config.env vars now accessible via process.env
 dotenv.config({ path: "./config/config.env" });
 
 // Passport config
@@ -50,7 +53,7 @@ const {
   ternary,
 } = require("./helpers/hbs");
 
-//Handlebars
+// Handlebars
 app.engine(
   ".hbs",
   exphbs({
@@ -61,17 +64,30 @@ app.engine(
 );
 app.set("view engine", ".hbs");
 
+// To use with flash messages
+app.use(cookieParser("secret"));
+
 // Sessions
 app.use(
   session({
-    secret: "keyboard cat",
-    resave: false,
-    saveUninitialized: false,
+    cookie: { maxAge: 60000 },
     store: new MongoStore({
       mongooseConnection: mongoose.connection,
     }),
+    secret: "secret",
+    resave: false,
+    saveUninitialized: false,
   })
 );
+app.use(flash());
+
+// Custom flash middleware -- from Ethan Brown's book, 'Web Development with Node & Express'
+app.use(function (req, res, next) {
+  // if there's a flash message in the session request, make it available in the response, then delete it
+  res.locals.sessionFlash = req.session.sessionFlash;
+  delete req.session.sessionFlash;
+  next();
+});
 
 //Passport Middleware
 app.use(passport.initialize());

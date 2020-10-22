@@ -2,8 +2,54 @@ p {
   margin-top: 10px !important;
 }
 
-.login-container,
-.register-container {
+.alert {
+  position: relative;
+  padding: 0.75rem 1.25rem;
+  margin-bottom: 1rem;
+  border: none;
+  border-radius: 0.25rem;
+  display: flex;
+
+  justify-content: center;
+  align-items: center;
+}
+
+.alert-dismissible {
+  padding-right: 3.90625rem;
+}
+
+.alert-dismissible .close {
+  position: absolute;
+  right: 0;
+  z-index: 2;
+  padding: 0.75rem 1.25rem;
+  color: inherit;
+  background-color: transparent;
+  border: 0;
+  float: right;
+  font-size: 1.40625rem;
+  font-weight: 700;
+  line-height: 1;
+  text-shadow: none;
+  opacity: 0.5;
+}
+
+.alert-danger {
+  color: black;
+  background-color: #ff9e9e;
+}
+
+.alert-success {
+  color: black;
+  background-color: #9cff90;
+}
+
+.alert-warning {
+  color: black;
+  background-color: #f79745;
+}
+
+.login-container {
   max-width: 400px;
   min-width: 350px;
   text-align: center;
