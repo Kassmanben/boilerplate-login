@@ -40,7 +40,4 @@ module.exports = {
         ' selected="selected"$&'
       );
   },
-  ternary: function (test, yes, no) {
-    return test ? yes : no;
-  },
 };

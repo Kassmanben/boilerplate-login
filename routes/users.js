@@ -12,12 +12,30 @@ const User = require("../models/User");
 const { ensureGuest } = require("../middleware/auth");
 const moment = require("moment");
 
+function validateText(text, regexPattern) {
+  return regexPattern.test(String(text).toLowerCase());
+}
+
+function isErrorObjectEmpty(obj) {
+  for (var key in obj) {
+    if (obj[key] !== null && obj[key] != "") return false;
+  }
+  return true;
+}
+
 // Register Page
 router.get("/register", ensureGuest, (req, res) =>
   res.render("register", {
     layout: "login",
-    errors: [],
-    name: "",
+    errors: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+      password2: "",
+    },
+    firstName: "",
+    lastName: "",
     email: "",
     password: "",
     password2: "",
@@ -49,6 +67,10 @@ router.get("/reset/:id", ensureGuest, async (req, res) => {
       }
 
       if (moment(user.resetTimeout).isBefore(moment())) {
+        req.session.sessionFlash = {
+          type: "alert-warning",
+          message: constants.FLASH_MESSAGES.REDIRECT_ERRORS.INVALID_LINK,
+        };
         res.redirect("/");
       } else {
         res.render("reset", {
@@ -147,46 +169,82 @@ router.post("/forgot", ensureGuest, async (req, res) => {
 router.post("/reset/:id", async (req, res) => {
   const { password, password2 } = req.body;
 
-  let errors = [];
+  let errors = {
+    password:
+      password && validateText(password, constants.REGEX.PASSWORD_VALIDATION)
+        ? ""
+        : "Your password must include one lowercase letter, a number and special character",
+    password2:
+      password && validateText(password, constants.REGEX.PASSWORD_VALIDATION)
+        ? ""
+        : "Your passwords must match",
+  };
 
-  if (!password || !password2) {
-    errors.push({ msg: "Please enter all fields" });
-  }
-
-  if (password != password2) {
-    errors.push({ msg: "Passwords do not match" });
-  }
-
-  if (password.length < 6) {
-    errors.push({ msg: "Password must be at least 6 characters" });
-  }
-
-  if (errors.length > 0) {
-    const user = await User.findOne({
-      _id: req.params.id,
-    }).lean();
-    res.render("reset", {
-      errors,
-      user,
-      password,
-      password2,
-    });
-  } else {
+  if (isErrorObjectEmpty(errors)) {
     const user = await User.findOne({
       _id: req.params.id,
     });
 
     bcrypt.genSalt(10, (err, salt) => {
+      if (err) {
+        res.render(`/reset/${req.params.id}`, {
+          layout: "login",
+          sessionFlash: {
+            type: "alert-danger",
+            message: "Sorry, something went wrong",
+          },
+          errors,
+          password: "",
+          password2: "",
+        });
+      }
       bcrypt.hash(password, salt, (err, hash) => {
-        if (err) throw err;
+        if (err) {
+          res.render(`/reset/${req.params.id}`, {
+            layout: "login",
+            sessionFlash: {
+              type: "alert-danger",
+              message: "Sorry, something went wrong",
+            },
+            errors,
+            password: "",
+            password2: "",
+          });
+        }
         user.password = hash;
         user
           .save()
           .then((user) => {
+            req.session.sessionFlash = {
+              type: "alert-success",
+              message:
+                constants.FLASH_MESSAGES.REDIRECT_SUCCESSES
+                  .REGISTRATION_SUCCESS,
+            };
             res.redirect("/");
           })
-          .catch((err) => console.log(err));
+          .catch((err) => {
+            res.render(`/reset/${req.params.id}`, {
+              layout: "login",
+              sessionFlash: {
+                type: "alert-danger",
+                message: "Sorry, something went wrong",
+              },
+              errors,
+              password: "",
+              password2: "",
+            });
+          });
       });
+    });
+  } else {
+    const user = await User.findOne({
+      resetToken: new mongoose.Types.ObjectId(req.params.id),
+    }).lean();
+    res.render(`/reset/${req.params.id}`, {
+      layout: "login",
+      errors,
+      user,
     });
   }
 });
@@ -194,40 +252,46 @@ router.post("/reset/:id", async (req, res) => {
 // Register
 router.post("/register", (req, res) => {
   const { firstName, lastName, email, password, password2 } = req.body;
-  let errors = [];
+  let errors = {
+    firstName: !firstName
+      ? "Please enter your first name"
+      : validateText(firstName, constants.REGEX.NAME_VALIDATION)
+      ? ""
+      : "Your name must contain only letters and valid special characters (,.'-)",
+    lastName: !lastName
+      ? "Please enter your last name"
+      : validateText(lastName, constants.REGEX.NAME_VALIDATION)
+      ? ""
+      : "Your name must contain only letters and valid special characters (,.'-)",
+    email:
+      email && validateText(email, constants.REGEX.EMAIL_VALIDATION)
+        ? ""
+        : "Please enter a valid email address",
+    password:
+      password && validateText(password, constants.REGEX.PASSWORD_VALIDATION)
+        ? ""
+        : "Your password must include one lowercase letter, a number and special character",
+    password2:
+      password && validateText(password, constants.REGEX.PASSWORD_VALIDATION)
+        ? ""
+        : "Your passwords must match",
+  };
 
-  if (!firstName || !lastName || !email || !password || !password2) {
-    errors.push({ msg: "Please enter all fields" });
-  }
-
-  if (password != password2) {
-    errors.push({ msg: "Passwords do not match" });
-  }
-
-  if (password.length < 6) {
-    errors.push({ msg: "Password must be at least 6 characters" });
-  }
-
-  if (errors.length > 0) {
-    res.render("register", {
-      errors,
-      firstName,
-      lastName,
-      email,
-      password,
-      password2,
-    });
-  } else {
+  if (isErrorObjectEmpty(errors)) {
     User.findOne({ email: email }).then((user) => {
       if (user) {
-        errors.push({ msg: "Email already exists" });
         res.render("register", {
+          layout: "login",
+          sessionFlash: {
+            type: "alert-danger",
+            message: "Email already exists",
+          },
           errors,
           firstName,
           lastName,
           email,
-          password,
-          password2,
+          password: "",
+          password2: "",
         });
       } else {
         const newUser = new User({
@@ -241,18 +305,79 @@ router.post("/register", (req, res) => {
         });
 
         bcrypt.genSalt(10, (err, salt) => {
+          if (err) {
+            res.render("register", {
+              layout: "login",
+              sessionFlash: {
+                type: "alert-danger",
+                message: "Sorry, something went wrong",
+              },
+              errors,
+              firstName,
+              lastName,
+              email,
+              password: "",
+              password2: "",
+            });
+          }
           bcrypt.hash(newUser.password, salt, (err, hash) => {
-            if (err) throw err;
+            if (err) {
+              res.render("register", {
+                layout: "login",
+                sessionFlash: {
+                  type: "alert-danger",
+                  message: "Sorry, something went wrong",
+                },
+                errors,
+                firstName,
+                lastName,
+                email,
+                password: "",
+                password2: "",
+              });
+            }
             newUser.password = hash;
             newUser
               .save()
               .then((user) => {
+                req.session.sessionFlash = {
+                  type: "alert-success",
+                  message:
+                    constants.FLASH_MESSAGES.REDIRECT_SUCCESSES
+                      .REGISTRATION_SUCCESS,
+                };
                 res.redirect("/");
               })
-              .catch((err) => console.log(err));
+              .catch((err) => {
+                if (err) {
+                  res.render("register", {
+                    layout: "login",
+                    sessionFlash: {
+                      type: "alert-danger",
+                      message: "Sorry, something went wrong",
+                    },
+                    errors,
+                    firstName,
+                    lastName,
+                    email,
+                    password: "",
+                    password2: "",
+                  });
+                }
+              });
           });
         });
       }
+    });
+  } else {
+    res.render("register", {
+      layout: "login",
+      errors,
+      firstName,
+      lastName,
+      email,
+      password: "",
+      password2: "",
     });
   }
 });

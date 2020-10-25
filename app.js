@@ -50,14 +50,19 @@ const {
   stripTags,
   editIcon,
   select,
-  ternary,
 } = require("./helpers/hbs");
 
 // Handlebars
 app.engine(
   ".hbs",
   exphbs({
-    helpers: { formatDate, stripTags, truncate, editIcon, select, ternary },
+    helpers: {
+      formatDate,
+      stripTags,
+      truncate,
+      editIcon,
+      select,
+    },
     defaultLayout: "main",
     extname: ".hbs",
   })

@@ -23,6 +23,8 @@
   <script>
     M.Sidenav.init(document.querySelector('.sidenav'))
     M.FormSelect.init(document.querySelector('#status'))
+    var elems = document.querySelectorAll('.tooltipped');
+    var instances = M.Tooltip.init(elems, options);
     CKEDITOR.replace('body', {
       plugins: 'wysiwygarea, toolbar, basicstyles, link'
     })
