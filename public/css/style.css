@@ -137,3 +137,40 @@ p {
   font-size: medium;
   font-weight: 700;
 }
+
+.delete-form {
+  display: inline-block;
+  margin: 0 0 0 5px;
+}
+
+.icon-btn {
+  padding: 0;
+  background-color: transparent;
+  display: inline-block;
+  border: 0;
+  color: #7d7d7d;
+}
+
+.icon-btn.edit {
+  position: absolute;
+  top: 10%;
+  right: 4%;
+}
+
+.icon-btn.delete:hover {
+  color: red;
+}
+
+.edit-link,
+.add-link {
+  color: #7d7d7d;
+}
+
+.edit-link:hover,
+.add-link:hover {
+  color: #4582ec;
+}
+
+.action-buttons a {
+  display: inline-block;
+}

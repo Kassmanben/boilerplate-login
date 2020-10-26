@@ -9,7 +9,7 @@ var mandrill_client = new mandrill.Mandrill(process.env.MANDRILL);
 
 // Load User model
 const User = require("../models/User");
-const { ensureGuest } = require("../middleware/auth");
+const { ensureAuth, ensureGuest } = require("../middleware/auth");
 const moment = require("moment");
 
 function validateText(text, regexPattern) {
@@ -384,6 +384,70 @@ router.post("/register", (req, res) => {
       password: "",
       password2: "",
     });
+  }
+});
+
+// Edit
+router.put("/edit", ensureAuth, async (req, res) => {
+  const { firstName, lastName, email } = req.body;
+  let errors = {
+    firstName: !firstName
+      ? "Please enter your first name"
+      : validateText(firstName, constants.REGEX.NAME_VALIDATION)
+      ? ""
+      : "Your name must contain only letters and valid special characters (,.'-)",
+    lastName: !lastName
+      ? "Please enter your last name"
+      : validateText(lastName, constants.REGEX.NAME_VALIDATION)
+      ? ""
+      : "Your name must contain only letters and valid special characters (,.'-)",
+    email:
+      email && validateText(email, constants.REGEX.EMAIL_VALIDATION)
+        ? ""
+        : "Please enter a valid email address",
+  };
+
+  if (isErrorObjectEmpty(errors)) {
+    let user = await User.findOne({ email: email }).lean();
+    if (!user) {
+      req.session.sessionFlash = {
+        type: "alert-danger",
+        message: constants.FLASH_MESSAGES.REDIRECT_ERRORS.GENERIC_ERROR,
+      };
+      console.error(err);
+      res.redirect("/profile");
+    }
+
+    if (user._id != req.user.id) {
+      res.redirect("/profile");
+    } else {
+      user = await User.findOneAndUpdate(
+        { _id: req.user.id },
+        {
+          firstName: firstName,
+          lastName: lastName,
+          email: email,
+          displayName: firstName + " " + lastName,
+        },
+        {
+          new: true,
+          runValidators: true,
+        }
+      );
+      req.session.sessionFlash = {
+        type: "alert-success",
+        message:
+          constants.FLASH_MESSAGES.REDIRECT_SUCCESSES.STORY_EDITED_SUCCESS,
+      };
+      console.log("User Updated");
+      res.redirect("/profile");
+    }
+  } else {
+    req.session.sessionFlash = {
+      type: "alert-danger",
+      message: constants.FLASH_MESSAGES.REDIRECT_ERRORS.EDIT_PROFILE_ERROR,
+    };
+    res.redirect("/profile");
   }
 });
 

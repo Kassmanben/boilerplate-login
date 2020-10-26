@@ -9,6 +9,10 @@ const methodOverride = require("method-override");
 const passport = require("passport");
 const path = require("path");
 const session = require("express-session");
+const Handlebars = require("handlebars");
+const {
+  allowInsecurePrototypeAccess,
+} = require("@handlebars/allow-prototype-access");
 
 const MongoStore = require("connect-mongo")(session);
 const connectDB = require("./config/db");
@@ -65,6 +69,7 @@ app.engine(
     },
     defaultLayout: "main",
     extname: ".hbs",
+    handlebars: allowInsecurePrototypeAccess(Handlebars),
   })
 );
 app.set("view engine", ".hbs");

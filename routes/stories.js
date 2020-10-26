@@ -67,7 +67,7 @@ router.get("/:id", ensureAuth, async (req, res) => {
         type: "alert-danger",
         message: constants.FLASH_MESSAGES.REDIRECT_ERRORS.NOT_FOUND,
       };
-      console.error(err);
+      console.log("No story found");
       res.redirect("/");
     }
 

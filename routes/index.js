@@ -17,9 +17,11 @@ router.get("/profile", ensureAuth, async (req, res) => {
     // lean means it's returned as a plain js object, not mongoose
     const stories = await Story.find({
       user: req.user.id,
-    }).lean();
+    })
+      .populate("user")
+      .lean();
+
     res.render("profile", {
-      name: req.user.firstName,
       stories,
     });
   } catch (err) {

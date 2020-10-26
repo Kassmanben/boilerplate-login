@@ -1,6 +1,7 @@
 module.exports = Object.freeze({
   FLASH_MESSAGES: {
     REDIRECT_ERRORS: {
+      EDIT_PROFILE_ERROR: "There were errors updating your profile.",
       INVALID_LINK: "That link is invalid. Please try again.",
       NOT_FOUND: "The page you're looking for was not found.",
       GENERIC_ERROR: "Sorry, something went wrong. Please try again.",
