@@ -3,6 +3,7 @@ module.exports = {
     if (req.isAuthenticated()) {
       return next();
     } else {
+      console.log("User is not authenticated")
       res.redirect("/");
     }
   },

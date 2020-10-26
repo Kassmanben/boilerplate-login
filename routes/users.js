@@ -63,6 +63,7 @@ router.get("/reset/:id", ensureGuest, async (req, res) => {
           type: "alert-warning",
           message: constants.FLASH_MESSAGES.REDIRECT_ERRORS.INVALID_LINK,
         };
+        console.log("User not found");
         return res.redirect("/");
       }
 
@@ -71,6 +72,7 @@ router.get("/reset/:id", ensureGuest, async (req, res) => {
           type: "alert-warning",
           message: constants.FLASH_MESSAGES.REDIRECT_ERRORS.INVALID_LINK,
         };
+        console.log("Retry link has timed out");
         res.redirect("/");
       } else {
         res.render("reset", {
@@ -83,6 +85,7 @@ router.get("/reset/:id", ensureGuest, async (req, res) => {
         type: "alert-warning",
         message: constants.FLASH_MESSAGES.REDIRECT_ERRORS.INVALID_LINK,
       };
+      console.log("Retry link has invalid token id");
       return res.redirect("/");
     }
   } catch (err) {
@@ -152,8 +155,10 @@ router.post("/forgot", ensureGuest, async (req, res) => {
       function (result) {
         console.log(result);
       },
-      function (e) {
-        console.log("A mandrill error occurred: " + e.name + " - " + e.message);
+      function (err) {
+        console.log(
+          "A mandrill error occurred: " + err.name + " - " + err.message
+        );
       }
     );
     req.session.sessionFlash = {

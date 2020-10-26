@@ -23,8 +23,12 @@ router.get("/dashboard", ensureAuth, async (req, res) => {
       stories,
     });
   } catch (err) {
+    req.session.sessionFlash = {
+      type: "alert-danger",
+      message: constants.FLASH_MESSAGES.REDIRECT_ERRORS.GENERIC_ERROR,
+    };
     console.error(err);
-    res.render("error/500");
+    res.redirect("/");
   }
 });
 

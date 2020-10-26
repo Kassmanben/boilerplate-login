@@ -75,7 +75,7 @@ app.use(cookieParser("secret"));
 // Sessions
 app.use(
   session({
-    cookie: { maxAge: 60000 },
+    cookie: { maxAge: 2592000 },
     store: new MongoStore({
       mongooseConnection: mongoose.connection,
     }),

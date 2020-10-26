@@ -20,6 +20,7 @@ router.get(
 // @route GET /auth/logout
 router.get("/logout", (req, res) => {
   req.logout();
+  console.log("Logging user out");
   res.redirect("/");
 });
 

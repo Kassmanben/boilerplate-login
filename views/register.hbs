@@ -1,77 +1,89 @@
-<h3><i class="fas fa-user-plus"></i> Register</h3>
+<div class="card">
+  <div class="card-body">
+    <h3><i class="fas fa-user-plus"></i> Register</h3>
 
-<form action="/users/register" method="POST">
-  <div class="row form-group">
-    <label for="firstName">First Name</label>
-    <input
-      type="text"
-      id="firstName"
-      name="firstName"
-      autocomplete="family-name"
-      class="form-control"
-      placeholder="First Name"
-      value="{{ firstName }}"
-    />
-    <div class="validation-text">{{ errors.firstName }}</div>
+    <form action="/users/register" method="POST" class="top-margin">
+      <div class="form-group">
+        <label for="firstName">First Name</label>
+        <input
+          type="text"
+          id="firstName"
+          name="firstName"
+          autocomplete="family-name"
+          class="form-control"
+          placeholder="First Name"
+          value="{{ firstName }}"
+          autocomplete="given-name"
+        />
+        <div class="validation-text">{{ errors.firstName }}</div>
+      </div>
+      <div class="form-group">
+        <label for="lastName">Last Name</label>
+        <input
+          type="text"
+          id="lastName"
+          name="lastName"
+          autocomplete="family-name"
+          class="form-control"
+          placeholder="Last Name"
+          value="{{ lastName }}"
+          autocomplete="family-name"
+        />
+        <div class="validation-text">{{ errors.lastName }}</div>
+      </div>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          type="text"
+          id="email"
+          name="email"
+          class="form-control"
+          placeholder="Email"
+          value="{{ email }}"
+          autocomplete="email"
+        />
+        <div class="validation-text">{{ errors.email }}</div>
+      </div>
+      <div class="form-group">
+        <label for="password"
+          >Password
+          <i
+            class="fas fa-question-circle tooltipped"
+            data-toggle="tooltip"
+            data-placement="top"
+            title="Password must contain at least one lowercase letter, one number and one special character"
+          ></i>
+        </label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          class="form-control password"
+          placeholder="Create Password"
+          value="{{ password }}"
+          autocomplete="new-password"
+        />
+        <div class="validation-text">{{ errors.password }}</div>
+      </div>
+      <div class="form-group">
+        <label for="password2">Confirm Password</label>
+        <input
+          type="password"
+          id="password2"
+          name="password2"
+          class="form-control password"
+          placeholder="Confirm Password"
+          value="{{ password2 }}"
+          autocomplete="new-password"
+        />
+        <div class="validation-text">{{ errors.password2 }}</div>
+      </div>
+      <div class="section">
+        <button type="submit" class="btn btn-primary">Register</button>
+      </div>
+    </form>
+    <div class="bottom-link">
+      <small><a href="/">Return to Login Page</a></small>
+    </div>
   </div>
-  <div class="row form-group">
-    <label for="lastName">Last Name</label>
-    <input
-      type="text"
-      id="lastName"
-      name="lastName"
-      autocomplete="family-name"
-      class="form-control"
-      placeholder="Last Name"
-      value="{{ lastName }}"
-    />
-    <div class="validation-text">{{ errors.lastName }}</div>
-  </div>
-  <div class="form-group">
-    <label for="email">Email</label>
-    <input
-      type="text"
-      id="email"
-      name="email"
-      class="form-control"
-      placeholder="Email"
-      value="{{ email }}"
-    />
-    <div class="validation-text">{{ errors.email }}</div>
-  </div>
-  <div class="form-group">
-    <label for="password"
-      >Password
-      <i
-        class="fas fa-question-circle tooltipped"
-        data-position="top"
-        data-tooltip="Password must contain at least one lowercase letter, one number and one special character"
-      ></i>
-    </label>
-    <input
-      type="password"
-      id="password"
-      name="password"
-      class="form-control password"
-      placeholder="Create Password"
-      value="{{ password }}"
-    />
-    <div class="validation-text">{{ errors.password }}</div>
-  </div>
-  <div class="form-group">
-    <label for="password2">Confirm Password</label>
-    <input
-      type="password"
-      id="password2"
-      name="password2"
-      class="form-control password"
-      placeholder="Confirm Password"
-      value="{{ password2 }}"
-    />
-    <div class="validation-text">{{ errors.password2 }}</div>
-  </div>
-  <div class="section">
-    <button type="submit" class="btn btn-primary">Register</button>
-  </div>
-</form>
-<p class="lead mt-4"><a href="/">Return to Login Page</a></p>
+</div>

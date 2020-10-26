@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const constants = require("../public/constants/constants");
 const { ensureAuth } = require("../middleware/auth");
 
 const Story = require("../models/Story");
@@ -22,8 +23,12 @@ router.get("/", ensureAuth, async (req, res) => {
       stories,
     });
   } catch (err) {
+    req.session.sessionFlash = {
+      type: "alert-danger",
+      message: constants.FLASH_MESSAGES.REDIRECT_ERRORS.GENERIC_ERROR,
+    };
     console.error(err);
-    res.render("error/500");
+    res.redirect("/");
   }
 });
 
@@ -42,8 +47,12 @@ router.get("/user/:userId", ensureAuth, async (req, res) => {
       stories,
     });
   } catch (err) {
+    req.session.sessionFlash = {
+      type: "alert-danger",
+      message: constants.FLASH_MESSAGES.REDIRECT_ERRORS.GENERIC_ERROR,
+    };
     console.error(err);
-    res.render("error/500");
+    res.redirect("/");
   }
 });
 
@@ -54,15 +63,24 @@ router.get("/:id", ensureAuth, async (req, res) => {
     let story = await Story.findById(req.params.id).populate("user").lean();
 
     if (!story) {
-      return res.render("error/404");
+      req.session.sessionFlash = {
+        type: "alert-danger",
+        message: constants.FLASH_MESSAGES.REDIRECT_ERRORS.NOT_FOUND,
+      };
+      console.error(err);
+      res.redirect("/");
     }
 
     res.render("stories/show", {
       story,
     });
   } catch (err) {
+    req.session.sessionFlash = {
+      type: "alert-danger",
+      message: constants.FLASH_MESSAGES.REDIRECT_ERRORS.GENERIC_ERROR,
+    };
     console.error(err);
-    res.render("error/404");
+    res.redirect("/");
   }
 });
 
@@ -75,17 +93,27 @@ router.get("/edit/:id", ensureAuth, async (req, res) => {
     }).lean();
 
     if (!story) {
-      return res.render("error/404");
+      req.session.sessionFlash = {
+        type: "alert-danger",
+        message: constants.FLASH_MESSAGES.REDIRECT_ERRORS.NOT_FOUND,
+      };
+      console.error(err);
+      res.redirect("/");
     }
 
     if (story.user != req.user.id) {
+      console.log("User does not match story user");
       res.redirect("/stories");
     } else {
       res.render("stories/edit", { story });
     }
   } catch (err) {
+    req.session.sessionFlash = {
+      type: "alert-danger",
+      message: constants.FLASH_MESSAGES.REDIRECT_ERRORS.GENERIC_ERROR,
+    };
     console.error(err);
-    res.redirect("error/500");
+    res.redirect("/");
   }
 });
 
@@ -95,10 +123,18 @@ router.post("/", ensureAuth, async (req, res) => {
   try {
     req.body.user = req.user.id;
     await Story.create(req.body);
+    req.session.sessionFlash = {
+      type: "alert-success",
+      message: constants.FLASH_MESSAGES.REDIRECT_SUCCESSES.STORY_ADDED_SUCCESS,
+    };
     res.redirect("/dashboard");
   } catch (err) {
+    req.session.sessionFlash = {
+      type: "alert-danger",
+      message: constants.FLASH_MESSAGES.REDIRECT_ERRORS.GENERIC_ERROR,
+    };
     console.error(err);
-    res.render("error/500");
+    res.redirect("/");
   }
 });
 
@@ -109,10 +145,16 @@ router.put("/:id", ensureAuth, async (req, res) => {
     let story = await Story.findById(req.params.id).lean();
 
     if (!story) {
-      return res.render("error/404");
+      req.session.sessionFlash = {
+        type: "alert-danger",
+        message: constants.FLASH_MESSAGES.REDIRECT_ERRORS.NOT_FOUND,
+      };
+      console.error(err);
+      res.redirect("/");
     }
 
     if (story.user != req.user.id) {
+      console.log("User does not match story user");
       res.redirect("/stories");
     } else {
       story = await Story.findOneAndUpdate({ _id: req.params.id }, req.body, {
@@ -120,11 +162,21 @@ router.put("/:id", ensureAuth, async (req, res) => {
         runValidators: true,
       });
 
+      req.session.sessionFlash = {
+        type: "alert-success",
+        message:
+          constants.FLASH_MESSAGES.REDIRECT_SUCCESSES.STORY_EDITED_SUCCESS,
+      };
+
       res.redirect("/dashboard");
     }
   } catch (err) {
+    req.session.sessionFlash = {
+      type: "alert-danger",
+      message: constants.FLASH_MESSAGES.REDIRECT_ERRORS.GENERIC_ERROR,
+    };
     console.error(err);
-    return res.render("error/500");
+    res.redirect("/");
   }
 });
 
@@ -135,18 +187,33 @@ router.delete("/:id", ensureAuth, async (req, res) => {
     let story = await Story.findById(req.params.id).lean();
 
     if (!story) {
-      return res.render("error/404");
+      req.session.sessionFlash = {
+        type: "alert-danger",
+        message: constants.FLASH_MESSAGES.REDIRECT_ERRORS.NOT_FOUND,
+      };
+      console.error(err);
+      res.redirect("/");
     }
 
     if (story.user != req.user.id) {
+      console.log("User does not match story user");
       res.redirect("/stories");
     } else {
       await Story.remove({ _id: req.params.id });
+      req.session.sessionFlash = {
+        type: "alert-success",
+        message:
+          constants.FLASH_MESSAGES.REDIRECT_SUCCESSES.STORY_DELETED_SUCCESS,
+      };
       res.redirect("/dashboard");
     }
   } catch (err) {
+    req.session.sessionFlash = {
+      type: "alert-danger",
+      message: constants.FLASH_MESSAGES.REDIRECT_ERRORS.GENERIC_ERROR,
+    };
     console.error(err);
-    return res.render("error/500");
+    res.redirect("/");
   }
 });
 
