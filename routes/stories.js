@@ -127,7 +127,7 @@ router.post("/", ensureAuth, async (req, res) => {
       type: "alert-success",
       message: constants.FLASH_MESSAGES.REDIRECT_SUCCESSES.STORY_ADDED_SUCCESS,
     };
-    res.redirect("/dashboard");
+    res.redirect("/profile");
   } catch (err) {
     req.session.sessionFlash = {
       type: "alert-danger",
@@ -168,7 +168,7 @@ router.put("/:id", ensureAuth, async (req, res) => {
           constants.FLASH_MESSAGES.REDIRECT_SUCCESSES.STORY_EDITED_SUCCESS,
       };
 
-      res.redirect("/dashboard");
+      res.redirect("/profile");
     }
   } catch (err) {
     req.session.sessionFlash = {
@@ -205,7 +205,7 @@ router.delete("/:id", ensureAuth, async (req, res) => {
         message:
           constants.FLASH_MESSAGES.REDIRECT_SUCCESSES.STORY_DELETED_SUCCESS,
       };
-      res.redirect("/dashboard");
+      res.redirect("/profile");
     }
   } catch (err) {
     req.session.sessionFlash = {

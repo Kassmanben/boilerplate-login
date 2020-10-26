@@ -10,15 +10,15 @@ router.get("/", ensureGuest, (req, res) => {
   res.render("login", { layout: "login" });
 });
 
-// @desc Dashboard
-// @route GET /dashboard
-router.get("/dashboard", ensureAuth, async (req, res) => {
+// @desc profile
+// @route GET /profile
+router.get("/profile", ensureAuth, async (req, res) => {
   try {
     // lean means it's returned as a plain js object, not mongoose
     const stories = await Story.find({
       user: req.user.id,
     }).lean();
-    res.render("dashboard", {
+    res.render("profile", {
       name: req.user.firstName,
       stories,
     });

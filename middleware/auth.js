@@ -3,13 +3,13 @@ module.exports = {
     if (req.isAuthenticated()) {
       return next();
     } else {
-      console.log("User is not authenticated")
+      console.log("User is not authenticated");
       res.redirect("/");
     }
   },
   ensureGuest: function (req, res, next) {
     if (req.isAuthenticated()) {
-      res.redirect("/dashboard");
+      res.redirect("/profile");
     } else {
       return next();
     }
