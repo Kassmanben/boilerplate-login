@@ -4,7 +4,7 @@ const bcrypt = require("bcryptjs");
 const passport = require("passport");
 const mongoose = require("mongoose");
 const constants = require("../public/constants/constants");
-var mandrill = require("mandrill-api/mandrill");
+var mandrill = require("mandrill-api");
 var mandrill_client = new mandrill.Mandrill(process.env.MANDRILL);
 
 // Load User model
