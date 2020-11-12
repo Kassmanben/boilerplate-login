@@ -42,8 +42,12 @@ export default class Profile extends Component {
               <Card>
                 <Card.Body>
                   <h5 className="text-left">Profile</h5>
-                  <Card.Text className="text-left">User Display Name</Card.Text>
-                  <Card.Text className="text-left">User Permissions</Card.Text>
+                  <Card.Text className="text-left">
+                    {this.props.location.state.user.displayName}
+                  </Card.Text>
+                  <Card.Text className="text-left">
+                    {this.props.location.state.user.permissions}
+                  </Card.Text>
                   <Button className="icon-btn edit" onClick={this.handleShow}>
                     <FontAwesomeIcon icon={faEdit} />
                   </Button>
@@ -53,7 +57,7 @@ export default class Profile extends Component {
             <Col md={{ span: 8, order: 1 }} sm={{ span: 12, order: 1 }}>
               <h5 className="text-left">Stories</h5>
               <ListGroup>
-                {this.props.stories.map(function (s) {
+                {this.props.location.state.stories.map(function (s) {
                   return (
                     <ListGroup.Item
                       className="d-flex justify-content-between align-items-center"

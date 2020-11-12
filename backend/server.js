@@ -10,6 +10,7 @@ const passport = require("passport");
 const path = require("path");
 const session = require("express-session");
 const Handlebars = require("handlebars");
+const cors = require("cors");
 const {
   allowInsecurePrototypeAccess,
 } = require("@handlebars/allow-prototype-access");
@@ -30,6 +31,14 @@ const app = express();
 // Body parser
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
+
+app.use(
+  cors({
+    origin: "http://localhost:8000", // allow to server to accept request from different origin
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    credentials: true, // allow session cookie from browser to pass through
+  })
+);
 
 // Method override, allows form to make put/delete from form
 app.use(

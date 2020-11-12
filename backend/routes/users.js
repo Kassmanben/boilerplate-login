@@ -453,9 +453,22 @@ router.put("/edit", ensureAuth, async (req, res) => {
 
 // Login
 router.post("/login", (req, res, next) => {
-  passport.authenticate("local", {
-    successRedirect: "/profile",
-    failureRedirect: "/",
+  passport.authenticate("local", function (err, user, info) {
+    if (err) {
+      return next(err);
+    }
+    if (!user) {
+      return res
+        .status(404)
+        .json({ error: "You have entered an invalid email or password" });
+    }
+
+    req.logIn(user, function (err) {
+      if (err) {
+        return next(err);
+      }
+      return res.json({ user });
+    });
   })(req, res, next);
 });
 

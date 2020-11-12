@@ -65,9 +65,7 @@ export default class Navigation extends Component {
             <Route
               exact
               path="/"
-              render={() => (
-                <Profile stories={[{ title: "Test Title", id: "123" }]} />
-              )}
+              render={(props) => <Profile {...props} />}
             ></Route>
             <Route exact path="/forgot" component={Forgot}></Route>
             <Route exact path="/login" component={Login}></Route>

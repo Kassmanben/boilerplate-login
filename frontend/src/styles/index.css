@@ -1,3 +1,11 @@
+* {
+  font-family: "PT Sans", sans-serif !important;
+}
+
+.visible {
+  display: inherit;
+}
+
 p {
   margin-top: 10px !important;
 }

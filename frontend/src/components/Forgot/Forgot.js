@@ -23,7 +23,7 @@ export default class Forgot extends Component {
           <Card className="shadow-card">
             <Card.Body>
               <Form onSubmit={this.Forgot}>
-                <div class="subtitle">
+                <div className="subtitle">
                   Enter your email below and we'll send you a link to reset it.
                 </div>
                 <Form.Group>
@@ -35,7 +35,7 @@ export default class Forgot extends Component {
                 </Form.Group>
                 <Button type="submit">Send password reset email</Button>
               </Form>
-              <div class="section-thin">
+              <div className="section-thin">
                 <small>
                   <a href="/">{"< Go back"}</a>
                 </small>
