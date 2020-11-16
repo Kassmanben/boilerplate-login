@@ -89,7 +89,7 @@ app.use(cookieParser("secret"));
 // Sessions
 app.use(
   session({
-    cookie: { maxAge: 2592000 },
+    cookie: { maxAge: 1000 * 60 * 60 * 24 },
     store: new MongoStore({
       mongooseConnection: mongoose.connection,
     }),
@@ -122,10 +122,10 @@ app.use(function (req, res, next) {
 app.use(express.static(path.join(__dirname, "public")));
 
 // Routes
-app.use("/", require("./routes/index"));
-app.use("/auth", require("./routes/auth"));
-app.use("/stories", require("./routes/stories"));
-app.use("/users", require("./routes/users"));
+app.use("/api", require("./routes/index"));
+app.use("/api/auth", require("./routes/auth"));
+app.use("/api/stories", require("./routes/stories"));
+app.use("/api/users", require("./routes/users"));
 
 const PORT = process.env.PORT || 5000;
 

@@ -1,13 +1,15 @@
 const express = require("express");
 const router = express.Router();
 const { ensureAuth, ensureGuest } = require("../middleware/auth");
-
+const constants = require("../public/constants/constants");
 const Story = require("../models/Story");
 
-// @desc Login/Landing page
+// @desc Set authState
 // @route GET /
-router.get("/", ensureGuest, (req, res) => {
-  res.render("login", { layout: "login" });
+router.get("/authState", ensureGuest, (req, res) => {
+  res
+    .status(200)
+    .json({ redirect: "/", user: {}, authState: constants.AUTHSTATES.GUEST });
 });
 
 // @desc profile

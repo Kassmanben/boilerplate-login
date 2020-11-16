@@ -6,6 +6,12 @@
   display: inherit;
 }
 
+.spinner-border {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+}
+
 p {
   margin-top: 10px !important;
 }

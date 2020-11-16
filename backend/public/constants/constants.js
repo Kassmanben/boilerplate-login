@@ -20,4 +20,8 @@ module.exports = Object.freeze({
     NAME_VALIDATION: /^[a-zàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžßÇŒÆČŠŽ∂ð ,.'-]{1,250}$/iu,
     PASSWORD_VALIDATION: /^(?=.*[0-9])(?=.*[ !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~])[a-zA-Z0-9 !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~]{6,16}$/,
   },
+  AUTHSTATES: {
+    GUEST: "guest",
+    LOGGEDIN: "loggedIn",
+  },
 });

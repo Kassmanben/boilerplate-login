@@ -10,6 +10,7 @@ import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrash, faPlus } from "@fortawesome/free-solid-svg-icons";
 import Card from "react-bootstrap/Card";
+import axios from "axios";
 
 export default class Profile extends Component {
   constructor(props) {
@@ -34,6 +35,22 @@ export default class Profile extends Component {
   };
 
   render() {
+    const { from } = this.props.location.state || { from: { pathname: "/" } };
+
+    let user = {};
+    if (this.props.location.state.user) {
+      user = this.props.location.state;
+    } else if (this.props.user) {
+      user = this.props.user;
+    }
+
+    let authState = "guest";
+    if (this.props.location.state.authState) {
+      authState = this.props.location.state.authState;
+    } else if (this.props.authState) {
+      authState = this.props.authState;
+    }
+
     return (
       <>
         <Container className="main-container">
@@ -43,10 +60,10 @@ export default class Profile extends Component {
                 <Card.Body>
                   <h5 className="text-left">Profile</h5>
                   <Card.Text className="text-left">
-                    {this.props.location.state.user.displayName}
+                    {user.displayName}
                   </Card.Text>
                   <Card.Text className="text-left">
-                    {this.props.location.state.user.permissions}
+                    {user.permissions}
                   </Card.Text>
                   <Button className="icon-btn edit" onClick={this.handleShow}>
                     <FontAwesomeIcon icon={faEdit} />
@@ -57,7 +74,7 @@ export default class Profile extends Component {
             <Col md={{ span: 8, order: 1 }} sm={{ span: 12, order: 1 }}>
               <h5 className="text-left">Stories</h5>
               <ListGroup>
-                {this.props.location.state.stories.map(function (s) {
+                {[{ title: "Test Title", id: "123" }].map(function (s) {
                   return (
                     <ListGroup.Item
                       className="d-flex justify-content-between align-items-center"

@@ -452,7 +452,7 @@ router.put("/edit", ensureAuth, async (req, res) => {
 });
 
 // Login
-router.post("/login", (req, res, next) => {
+router.post("/login", ensureGuest, (req, res, next) => {
   passport.authenticate("local", function (err, user, info) {
     if (err) {
       return next(err);
@@ -467,7 +467,7 @@ router.post("/login", (req, res, next) => {
       if (err) {
         return next(err);
       }
-      return res.json({ user });
+      return res.json({ redirect: "/profile", user });
     });
   })(req, res, next);
 });

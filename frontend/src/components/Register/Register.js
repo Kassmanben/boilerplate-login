@@ -3,7 +3,7 @@ import Card from "react-bootstrap/Card";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import { Link } from "react-router-dom";
+import { Link, Redirect } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUserPlus } from "@fortawesome/free-solid-svg-icons";
 import { faGoogle } from "@fortawesome/free-brands-svg-icons";
@@ -14,6 +14,19 @@ export default class Login extends Component {
   }
 
   render() {
+    const { from } = this.props.location.state || { from: { pathname: "/" } };
+
+    let authState = "guest";
+    if (this.props.location.state.authState) {
+      authState = this.props.location.state.authState;
+    } else if (this.props.authState) {
+      authState = this.props.authState;
+    }
+
+    if (authState === "loggedIn") {
+      return <Redirect to={from} />;
+    }
+
     return (
       <Container className="card-container">
         <Card className="shadow-card">

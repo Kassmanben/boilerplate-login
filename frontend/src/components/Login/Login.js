@@ -28,6 +28,7 @@ export default class Login extends Component {
       show: false,
       user: {},
       loggedIn: false,
+      redirect: "",
     };
   }
 
@@ -111,17 +112,12 @@ export default class Login extends Component {
       this.setState({ validated: true });
 
       axios
-        .post(
-          "/users/login",
-          {
-            email: this.state.email,
-            password: this.state.password,
-          },
-          { withCredentials: true }
-        )
+        .post("/api/users/login", {
+          email: this.state.email,
+          password: this.state.password,
+        })
         .then((res) => {
-          console.log(res.status);
-          if (res.status === 200) {
+          if (res.status >= 200 && res.status < 300) {
             return res.data;
           } else if (res.status === 404) {
             this.setState({
@@ -132,16 +128,21 @@ export default class Login extends Component {
             throw new Error("Sorry something went wrong");
           }
         })
-        .then((resJson) => {
-          this.setState({
-            loggedIn: true,
-            user: resJson.user,
-          });
+        .then((data) => {
+          try {
+            this.setState({
+              loggedIn: true,
+              redirect: data.redirect,
+              user: data.user,
+            });
+          } catch (err) {
+            throw err;
+          }
         })
         .catch((err) => {
           console.log(err);
           this.setState({
-            header_error: "Sorry, something went wrong, please try again",
+            header_error: err.message,
             show: true,
           });
         });
@@ -154,16 +155,31 @@ export default class Login extends Component {
 
   render() {
     const { email, password } = this.state;
+    const { from } = this.props.location.state || { from: { pathname: "/" } };
+
+    let authState = "guest";
+    if (this.props.location.state.authState) {
+      authState = this.props.location.state.authState;
+    } else if (this.props.authState) {
+      authState = this.props.authState;
+    }
+
+    if (authState === "loggedIn") {
+      return <Redirect to={from} />;
+    }
+
     return (
       <Container className="card-container">
-        <AlertDismissible
-          show={this.state.show}
-          message={this.state.header_error}
-        />
+        {this.state.show && (
+          <AlertDismissible
+            show={this.state.show}
+            message={this.state.header_error}
+          />
+        )}
         {this.state.loggedIn ? (
           <Redirect
             to={{
-              path: "/profile",
+              path: this.state.redirect,
               state: {
                 user: this.state.user,
                 stories: [{ title: "Test Title", id: "123" }],
