@@ -7,9 +7,7 @@ const Story = require("../models/Story");
 // @desc Set authState
 // @route GET /
 router.get("/authState", ensureGuest, (req, res) => {
-  res
-    .status(200)
-    .json({ redirect: "/", user: {}, authState: constants.AUTHSTATES.GUEST });
+  res.status(200).json({ user: {}, authState: constants.AUTHSTATES.GUEST });
 });
 
 // @desc profile

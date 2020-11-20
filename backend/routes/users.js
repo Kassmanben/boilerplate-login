@@ -455,19 +455,23 @@ router.put("/edit", ensureAuth, async (req, res) => {
 router.post("/login", ensureGuest, (req, res, next) => {
   passport.authenticate("local", function (err, user, info) {
     if (err) {
+      console.log("TOP LEVEL ERR:", err);
       return next(err);
     }
     if (!user) {
-      return res
-        .status(404)
-        .json({ error: "You have entered an invalid email or password" });
+      return res.json({
+        authState: constants.AUTHSTATES.GUEST,
+        user: {},
+        error: "You have entered an invalid email or password",
+      });
     }
 
     req.logIn(user, function (err) {
       if (err) {
+        console.log("ERRORHEREMAYBE??");
         return next(err);
       }
-      return res.json({ redirect: "/profile", user });
+      return res.json({ authState: constants.AUTHSTATES.LOGGEDIN, user });
     });
   })(req, res, next);
 });

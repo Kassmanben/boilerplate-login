@@ -17,7 +17,6 @@ export default class Login extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      header_error: "",
       email: "",
       password: "",
       error_email: "",
@@ -25,10 +24,7 @@ export default class Login extends Component {
       focused_email: false,
       focused_password: false,
       validated: false,
-      show: false,
-      user: {},
-      loggedIn: false,
-      redirect: "",
+      show: true,
     };
   }
 
@@ -62,32 +58,32 @@ export default class Login extends Component {
           });
       }
     }
-
-    if (
-      e.target.name === "email" &&
-      !this.validateByRegex(
-        e.target.value,
-        RegexPatternConstants.EMAIL_VALIDATION
-      )
-    ) {
-      this.setState({
-        error_email: ErrorMessagingConstants.VALIDATION.INVALID_EMAIL,
-        validated: false,
-      });
-    } else {
-      this.setState({ error_email: "" });
+    if (e.target.name && e.target.value) {
+      if (e.target.name === "email") {
+        let isValid = this.validateByRegex(
+          e.target.value,
+          RegexPatternConstants.EMAIL_VALIDATION
+        );
+        if (!isValid) {
+          this.setState({
+            error_email: ErrorMessagingConstants.VALIDATION.INVALID_EMAIL,
+            validated: false,
+          });
+        } else {
+          this.setState({ error_email: "" });
+        }
+      }
     }
-
-    this.setState({ [e.target.name]: e.target.value });
   };
 
   onFocus = (e) => {
-    this.setState({ header_error: "", show: false });
-
+    this.setState({ show: false });
     if (e.target.name === "email") {
-      this.setState({ focused_email: true });
+      this.setState({ focused_email: true, focused_password: false });
     } else if (e.target.name === "password") {
-      this.setState({ focused_password: true });
+      this.setState({ focused_password: true, focused_email: false });
+    } else {
+      this.setState({ focused_password: false, focused_email: false });
     }
   };
 
@@ -96,6 +92,8 @@ export default class Login extends Component {
       this.setState({ focused_email: false });
     } else if (e.target.name === "password") {
       this.setState({ focused_password: false });
+    } else {
+      this.setState({ focused_password: false, focused_email: false });
     }
   };
 
@@ -104,48 +102,15 @@ export default class Login extends Component {
     event.preventDefault();
     event.stopPropagation();
     if (
-      form.checkValidity() === false ||
-      (this.state.error_email && this.state.error_password)
+      event.currentTarget.checkValidity() === false ||
+      (this.state.error_email && this.state.error_password) ||
+      !this.state.email ||
+      !this.state.password
     ) {
       this.setState({ validated: false });
-    } else if (this.state.email && this.state.password) {
+    } else {
       this.setState({ validated: true });
-
-      axios
-        .post("/api/users/login", {
-          email: this.state.email,
-          password: this.state.password,
-        })
-        .then((res) => {
-          if (res.status >= 200 && res.status < 300) {
-            return res.data;
-          } else if (res.status === 404) {
-            this.setState({
-              header_error: res.data.error,
-              show: true,
-            });
-          } else {
-            throw new Error("Sorry something went wrong");
-          }
-        })
-        .then((data) => {
-          try {
-            this.setState({
-              loggedIn: true,
-              redirect: data.redirect,
-              user: data.user,
-            });
-          } catch (err) {
-            throw err;
-          }
-        })
-        .catch((err) => {
-          console.log(err);
-          this.setState({
-            header_error: err.message,
-            show: true,
-          });
-        });
+      this.props.onLoginFormSubmit(form, this.state.email, this.state.password);
     }
   };
 
@@ -153,16 +118,15 @@ export default class Login extends Component {
     this.setState({ show: isShown });
   };
 
-  render() {
-    const { email, password } = this.state;
-    const { from } = this.props.location.state || { from: { pathname: "/" } };
+  onGoogleClick = () => {
+    window.open(`http://localhost:8000/api/auth/google`, "_self");
+  };
 
-    let authState = "guest";
-    if (this.props.location.state.authState) {
-      authState = this.props.location.state.authState;
-    } else if (this.props.authState) {
-      authState = this.props.authState;
-    }
+  render() {
+    const { from } = this.props.location.state || { from: { pathname: "/" } };
+    console.log("LOGIN PROPS: ", this.props);
+    let authState = this.props.authState || "guest";
+    let loginError = this.props.loginError || "";
 
     if (authState === "loggedIn") {
       return <Redirect to={from} />;
@@ -170,31 +134,15 @@ export default class Login extends Component {
 
     return (
       <Container className="card-container">
-        {this.state.show && (
-          <AlertDismissible
-            show={this.state.show}
-            message={this.state.header_error}
-          />
+        {loginError && (
+          <AlertDismissible show={this.state.show} message={loginError} />
         )}
-        {this.state.loggedIn ? (
-          <Redirect
-            to={{
-              path: this.state.redirect,
-              state: {
-                user: this.state.user,
-                stories: [{ title: "Test Title", id: "123" }],
-              },
-            }}
-          />
-        ) : null}
-
         <Card className="shadow-card">
           <Card.Body>
             <h3>
               <FontAwesomeIcon icon={faBookReader} />
               Storybooks
             </h3>
-            <div>Create public and private stories from your life</div>
             <Form onSubmit={this.onSubmit}>
               <Form.Group>
                 <Form.Label htmlFor="email">Email</Form.Label>
@@ -236,7 +184,7 @@ export default class Login extends Component {
                 <Form.Control.Feedback
                   type="invalid"
                   className={
-                    this.state.validated && !this.state.focused_password
+                    this.state.error_password && this.state.focused_password
                       ? ""
                       : "visible"
                   }
@@ -250,7 +198,7 @@ export default class Login extends Component {
               <Button type="submit">Login</Button>
             </Form>
             <div className="section-thin">or</div>
-            <Button href="/auth/google" className="red">
+            <Button onClick={this.onGoogleClick} className="red">
               <FontAwesomeIcon icon={faGoogle} />
               Sign in with Google
             </Button>

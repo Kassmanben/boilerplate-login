@@ -13,18 +13,18 @@ import Register from "../Register/Register";
 import Reset from "../Reset/Reset";
 import Stories from "../Stories/Stories";
 import axios from "axios";
-import AuthOnlyRoute from "../AuthedRoutes/AuthOnlyRoute";
-import GuestOnlyRoute from "../AuthedRoutes/GuestOnlyRoute";
+import PermissionsRoute from "../AuthedRoutes/PermissionsRoute";
+import { isEmptyObject, isStatusOk } from "../../helpers/helperFunctions";
 
 class Navigation extends Component {
   constructor(props) {
     super(props);
     this.state = {
       user: {},
-      redirect: "",
-      authState: "guest",
+      userAuthState: "guest",
       isLoading: true,
       from: "/",
+      loginError: "",
     };
   }
 
@@ -32,42 +32,28 @@ class Navigation extends Component {
     location: PropTypes.object.isRequired,
   };
 
-  componentDidUpdate(prevProps) {
-    if (this.props.location !== prevProps.location) {
-      this.setState({ from: prevProps.location.pathname });
-      this.onRouteChanged();
-    }
-  }
-
-  isStatusOk(status) {
-    return (status > 199 && status < 300) || res.status === 304;
-  }
-
-  isEmptyObject(obj) {
-    return Object.keys(obj).length == 0;
-  }
-
   async authFunc() {
+    console.log("AUTH");
     this.setState({ isLoading: true });
     axios.get("/api/authState").then((res) => {
       try {
-        if (this.isStatusOk(res.status) && !this.isEmptyObject(res.data.user)) {
+        if (isStatusOk(res.status) && !isEmptyObject(res.data.user)) {
           this.setState({
             user: res.data.user,
-            authState: res.data.authState,
+            userAuthState: res.data.authState,
             isLoading: false,
           });
-        } else {
+        } else if (res.status !== 304) {
           this.setState({
             user: {},
-            authState: "guest",
+            userAuthState: "guest",
             isLoading: false,
           });
         }
       } catch (err) {
         this.setState({
           user: {},
-          authState: "guest",
+          userAuthState: "guest",
           isLoading: false,
         });
         console.log(err);
@@ -76,6 +62,7 @@ class Navigation extends Component {
   }
 
   async componentDidMount() {
+    console.log("MOUNT");
     this.authFunc();
   }
 
@@ -83,17 +70,54 @@ class Navigation extends Component {
     axios
       .get("/api/auth/logout", { withCredentials: true })
       .then((res) => {
-        this.setState({ user: {}, authState: "guest" });
+        this.setState({ user: {}, userAuthState: "guest" });
       })
       .catch((err) => {
         console.log(err);
-        this.setState({ user: {}, authState: "guest" });
+        this.setState({ user: {}, userAuthState: "guest" });
       });
   };
 
-  async onRouteChanged() {
-    this.authFunc();
-  }
+  onLoginFormSubmit = (form, email, password) => {
+    console.log("LOGIN BY FORM");
+    this.setState({ isLoading: true });
+    axios
+      .post("/api/users/login", {
+        email: email,
+        password: password,
+      })
+      .then((res) => {
+        console.log("LOGIN RES: ", res);
+        try {
+          if (isStatusOk(res.status)) {
+            if (!isEmptyObject(res.data.user)) {
+              console.log(res.data);
+              this.setState({
+                user: res.data.user,
+                userAuthState: res.data.authState,
+                isLoading: false,
+              });
+            } else {
+              console.log("404 res: ", res);
+              this.setState({
+                loginError: res.data.error,
+                user: {},
+                userAuthState: "guest",
+                isLoading: false,
+              });
+            }
+          }
+        } catch (err) {
+          console.log("ERROR");
+          this.setState({
+            user: {},
+            userAuthState: "guest",
+            isLoading: false,
+          });
+          console.log(err);
+        }
+      });
+  };
 
   render() {
     if (this.state.isLoading) {
@@ -149,7 +173,7 @@ class Navigation extends Component {
                 {!this.state.isLoading && (
                   <NavItem eventkey={7}>
                     <Nav.Link as={Link} to="/">
-                      {this.state.authState === "loggedIn"
+                      {this.state.userAuthState === "loggedIn"
                         ? "That's Auth Baby"
                         : "CRIME!"}
                     </Nav.Link>
@@ -170,43 +194,53 @@ class Navigation extends Component {
         </div>
         <div>
           <Switch>
-            <AuthOnlyRoute
+            <PermissionsRoute
               exact
               path="/"
-              authState={this.state.authState}
+              userAuthState={this.state.userAuthState}
               component={Profile}
               from={this.state.from}
               user={this.state.user}
+              routePermissions={["loggedIn"]}
             />
-            <GuestOnlyRoute
+            <PermissionsRoute
               exact
               path="/forgot"
-              authState={this.state.authState}
+              userAuthState={this.state.userAuthState}
               component={Forgot}
               from={this.state.from}
-            ></GuestOnlyRoute>
-            <GuestOnlyRoute
+              user={this.state.user}
+              routePermissions={["guest"]}
+            ></PermissionsRoute>
+            <PermissionsRoute
               exact
               path="/login"
-              authState={this.state.authState}
+              userAuthState={this.state.userAuthState}
               component={Login}
               from={this.state.from}
-            ></GuestOnlyRoute>
-            <GuestOnlyRoute
+              user={this.state.user}
+              onLoginFormSubmit={this.onLoginFormSubmit}
+              routePermissions={["guest"]}
+              loginError={this.state.loginError}
+            ></PermissionsRoute>
+            <PermissionsRoute
               exact
               path="/register"
-              authState={this.state.authState}
+              userAuthState={this.state.userAuthState}
               component={Register}
               from={this.state.from}
-            ></GuestOnlyRoute>
+              user={this.state.user}
+              routePermissions={["guest"]}
+            ></PermissionsRoute>
             <Route exact path="/reset" component={Reset}></Route>
-            <AuthOnlyRoute
+            <PermissionsRoute
               exact
               path="/stories"
-              authState={this.state.authState}
+              userAuthState={this.state.userAuthState}
               component={Stories}
               from={this.state.from}
               user={this.state.user}
+              routePermissions={["loggedIn"]}
             />
             <Route
               render={function () {

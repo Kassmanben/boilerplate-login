@@ -35,21 +35,9 @@ export default class Profile extends Component {
   };
 
   render() {
+    console.log("PROFILE PROPS:", this.props);
     const { from } = this.props.location.state || { from: { pathname: "/" } };
-
-    let user = {};
-    if (this.props.location.state.user) {
-      user = this.props.location.state;
-    } else if (this.props.user) {
-      user = this.props.user;
-    }
-
-    let authState = "guest";
-    if (this.props.location.state.authState) {
-      authState = this.props.location.state.authState;
-    } else if (this.props.authState) {
-      authState = this.props.authState;
-    }
+    let user = this.props.user || {};
 
     return (
       <>
