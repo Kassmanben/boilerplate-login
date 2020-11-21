@@ -1,66 +1,65 @@
-import React, { Component } from "react";
-import Card from "react-bootstrap/Card";
-import Container from "react-bootstrap/Container";
-import Form from "react-bootstrap/Form";
-import Button from "react-bootstrap/Button";
-import { Link, Redirect } from "react-router-dom";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBookReader } from "@fortawesome/free-solid-svg-icons";
-import { faGoogle } from "@fortawesome/free-brands-svg-icons";
-import * as ErrorMessagingConstants from "../../constants/error-messaging";
-import * as RegexPatternConstants from "../../constants/regex-patterns";
-import * as SuccessMessagingConstants from "../../constants/success-messaging";
-import axios from "axios";
-import AlertDismissible from "../Alert/AlertDismissible";
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import Card from 'react-bootstrap/Card';
+import Container from 'react-bootstrap/Container';
+import Form from 'react-bootstrap/Form';
+import Button from 'react-bootstrap/Button';
+import { Redirect } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBookReader } from '@fortawesome/free-solid-svg-icons';
+import { faGoogle } from '@fortawesome/free-brands-svg-icons';
+import * as ErrorMessagingConstants from '../../constants/error-messaging';
+import * as RegexPatternConstants from '../../constants/regex-patterns';
+import AlertDismissible from '../Alert/AlertDismissible';
+import { validateByRegex } from '../../helpers/helperFunctions';
 
 export default class Login extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      email: "",
-      password: "",
-      error_email: "",
-      error_password: "",
+      email: '',
+      password: '',
+      error_email: '',
+      error_password: '',
       focused_email: false,
       focused_password: false,
       validated: false,
-      show: true,
     };
   }
 
-  validateByRegex = (text, pattern) => {
-    return pattern.test(String(text).toLowerCase());
-  };
-
-  onChange = (e) => {
+  onChange(e) {
     if (!e.target.value) {
       this.setState({ validated: false });
       switch (e.target.name) {
-        case "email":
+        case 'email':
           this.setState({
             error_email: ErrorMessagingConstants.VALIDATION.EMPTY_EMAIL,
           });
-        case "password":
+          break;
+        case 'password':
           this.setState({
             error_password: ErrorMessagingConstants.VALIDATION.EMPTY_PASSWORD,
           });
+          break;
       }
     } else {
       this.setState({ validated: true });
       switch (e.target.name) {
-        case "email":
+        case 'email':
           this.setState({
-            error_email: "",
+            error_email: '',
           });
-        case "password":
+          break;
+        case 'password':
           this.setState({
-            error_password: "",
+            error_password: '',
           });
+          break;
       }
     }
     if (e.target.name && e.target.value) {
-      if (e.target.name === "email") {
-        let isValid = this.validateByRegex(
+      if (e.target.name === 'email') {
+        let isValid = validateByRegex(
           e.target.value,
           RegexPatternConstants.EMAIL_VALIDATION
         );
@@ -70,40 +69,43 @@ export default class Login extends Component {
             validated: false,
           });
         } else {
-          this.setState({ error_email: "" });
+          this.setState({ error_email: '' });
         }
       }
     }
-  };
 
-  onFocus = (e) => {
+    this.setState({ [e.target.name]: e.target.value });
+  }
+
+  onFocus(e) {
     this.setState({ show: false });
-    if (e.target.name === "email") {
+    if (e.target.name === 'email') {
       this.setState({ focused_email: true, focused_password: false });
-    } else if (e.target.name === "password") {
+    } else if (e.target.name === 'password') {
       this.setState({ focused_password: true, focused_email: false });
     } else {
       this.setState({ focused_password: false, focused_email: false });
     }
-  };
+  }
 
-  onBlur = (e) => {
-    if (e.target.name === "email") {
+  onBlur(e) {
+    if (e.target.name === 'email') {
       this.setState({ focused_email: false });
-    } else if (e.target.name === "password") {
+    } else if (e.target.name === 'password') {
       this.setState({ focused_password: false });
     } else {
       this.setState({ focused_password: false, focused_email: false });
     }
-  };
+  }
 
-  onSubmit = (event) => {
-    const form = event.currentTarget;
-    event.preventDefault();
-    event.stopPropagation();
+  onSubmit(e) {
+    const form = e.currentTarget;
+    e.preventDefault();
+    e.stopPropagation();
     if (
-      event.currentTarget.checkValidity() === false ||
-      (this.state.error_email && this.state.error_password) ||
+      e.currentTarget.checkValidity() === false ||
+      this.state.error_email ||
+      this.state.error_password ||
       !this.state.email ||
       !this.state.password
     ) {
@@ -112,30 +114,30 @@ export default class Login extends Component {
       this.setState({ validated: true });
       this.props.onLoginFormSubmit(form, this.state.email, this.state.password);
     }
-  };
+  }
 
-  onClose = (isShown) => {
-    this.setState({ show: isShown });
-  };
+  onGoogleClick() {
+    window.open(`http://localhost:8000/api/auth/google`, '_self');
+  }
 
-  onGoogleClick = () => {
-    window.open(`http://localhost:8000/api/auth/google`, "_self");
-  };
+  reroute(pathFrom, pathTo) {
+    this.props.rerouteWithComponentLink(pathFrom, pathTo);
+  }
 
   render() {
-    const { from } = this.props.location.state || { from: { pathname: "/" } };
-    console.log("LOGIN PROPS: ", this.props);
-    let authState = this.props.authState || "guest";
-    let loginError = this.props.loginError || "";
+    const { from } = this.props.location.state || { from: { pathname: '/' } };
+    console.log('LOGIN PROPS: ', this.props);
+    let authState = this.props.authState || 'guest';
+    let errorPassedOn = this.props.errorPassedOn || '';
 
-    if (authState === "loggedIn") {
+    if (authState === 'loggedIn') {
       return <Redirect to={from} />;
     }
 
     return (
       <Container className="card-container">
-        {loginError && (
-          <AlertDismissible show={this.state.show} message={loginError} />
+        {errorPassedOn && (
+          <AlertDismissible show={true} message={errorPassedOn} />
         )}
         <Card className="shadow-card">
           <Card.Body>
@@ -143,6 +145,7 @@ export default class Login extends Component {
               <FontAwesomeIcon icon={faBookReader} />
               Storybooks
             </h3>
+            <div>{this.state.email}</div>
             <Form onSubmit={this.onSubmit}>
               <Form.Group>
                 <Form.Label htmlFor="email">Email</Form.Label>
@@ -161,8 +164,8 @@ export default class Login extends Component {
                   type="invalid"
                   className={
                     this.state.error_email && this.state.focused_email
-                      ? ""
-                      : "visible"
+                      ? ''
+                      : 'visible'
                   }
                 >
                   {this.state.error_email}
@@ -185,14 +188,21 @@ export default class Login extends Component {
                   type="invalid"
                   className={
                     this.state.error_password && this.state.focused_password
-                      ? ""
-                      : "visible"
+                      ? ''
+                      : 'visible'
                   }
                 >
                   {this.state.error_password}
                 </Form.Control.Feedback>
                 <Form.Text muted>
-                  <Link to="/forgot">Forgot password?</Link>
+                  <Button
+                    className="button-as-link"
+                    onClick={() => {
+                      this.reroute('/login', '/forgot');
+                    }}
+                  >
+                    Forgot password?
+                  </Button>
                 </Form.Text>
               </Form.Group>
               <Button type="submit">Login</Button>
@@ -213,3 +223,11 @@ export default class Login extends Component {
     );
   }
 }
+
+Login.propTypes = {
+  onLoginFormSubmit: PropTypes.func.isRequired,
+  rerouteWithComponentLink: PropTypes.func.isRequired,
+  location: PropTypes.object.isRequired,
+  authState: PropTypes.string.isRequired,
+  errorPassedOn: PropTypes.string,
+};

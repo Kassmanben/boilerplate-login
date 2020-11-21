@@ -1,11 +1,10 @@
-import React, { Component } from "react";
-import Card from "react-bootstrap/Card";
-import Container from "react-bootstrap/Container";
-import Form from "react-bootstrap/Form";
-import Button from "react-bootstrap/Button";
-import { Link } from "react-router-dom";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faKey } from "@fortawesome/free-solid-svg-icons";
+import React, { Component } from 'react';
+import Card from 'react-bootstrap/Card';
+import Container from 'react-bootstrap/Container';
+import Form from 'react-bootstrap/Form';
+import Button from 'react-bootstrap/Button';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faKey } from '@fortawesome/free-solid-svg-icons';
 
 export default class Reset extends Component {
   constructor(props) {
@@ -45,7 +44,7 @@ export default class Reset extends Component {
             </Form>
             <div className="section-thin">
               <small>
-                <a href="/">{"< Go back to login"}</a>
+                <a href="/">{'< Go back to login'}</a>
               </small>
             </div>
           </Card.Body>

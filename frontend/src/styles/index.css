@@ -215,3 +215,16 @@ label {
 .text-left {
   text-align: left;
 }
+
+.button-as-link {
+  background: none !important;
+  border: none;
+  padding: 0 !important;
+  color: #069;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.button-as-link:hover {
+  color: black;
+}

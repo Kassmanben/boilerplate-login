@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import Alert from "react-bootstrap/Alert";
+import React, { useState } from 'react';
+import Alert from 'react-bootstrap/Alert';
 
 function AlertDismissible(props) {
   const [show, setShow] = useState({ ...props.show });

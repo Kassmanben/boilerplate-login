@@ -1,29 +1,29 @@
-import React, { Component } from "react";
-import Card from "react-bootstrap/Card";
-import Container from "react-bootstrap/Container";
-import Form from "react-bootstrap/Form";
-import Button from "react-bootstrap/Button";
-import { Link, Redirect } from "react-router-dom";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUserPlus } from "@fortawesome/free-solid-svg-icons";
-import { faGoogle } from "@fortawesome/free-brands-svg-icons";
+import React, { Component } from 'react';
+import Card from 'react-bootstrap/Card';
+import PropTypes from 'prop-types';
+import Container from 'react-bootstrap/Container';
+import Form from 'react-bootstrap/Form';
+import Button from 'react-bootstrap/Button';
+import { Redirect } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUserPlus } from '@fortawesome/free-solid-svg-icons';
 
-export default class Login extends Component {
+export default class Register extends Component {
   constructor(props) {
     super(props);
   }
 
   render() {
-    const { from } = this.props.location.state || { from: { pathname: "/" } };
+    const { from } = this.props.location.state || { from: { pathname: '/' } };
 
-    let authState = "guest";
+    let authState = 'guest';
     if (this.props.location.state.authState) {
       authState = this.props.location.state.authState;
     } else if (this.props.authState) {
       authState = this.props.authState;
     }
 
-    if (authState === "loggedIn") {
+    if (authState === 'loggedIn') {
       return <Redirect to={from} />;
     }
 
@@ -86,7 +86,7 @@ export default class Login extends Component {
             </Form>
             <div className="section-thin">
               <small>
-                <a href="/">{"< Go back to login"}</a>
+                <a href="/">{'< Go back to login'}</a>
               </small>
             </div>
           </Card.Body>
@@ -95,3 +95,9 @@ export default class Login extends Component {
     );
   }
 }
+
+Register.propTypes = {
+  location: PropTypes.object.isRequired,
+  authState: PropTypes.string.isRequired,
+  errorPassedOn: PropTypes.string,
+};

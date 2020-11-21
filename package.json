@@ -18,6 +18,13 @@
   "homepage": "https://github.com/Kassmanben/boilerplate-login#readme",
   "dependencies": {
     "@types/node": "^14.14.6",
-    "concurrently": "^5.3.0"
+    "concurrently": "^5.3.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "prettier": "^2.2.0"
+  },
+  "devDependencies": {
+    "eslint": "^7.14.0",
+    "eslint-config-prettier": "^6.15.0",
+    "eslint-plugin-react": "^7.21.5"
   }
 }

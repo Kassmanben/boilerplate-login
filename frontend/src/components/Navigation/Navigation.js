@@ -1,41 +1,38 @@
-import React, { Component } from "react";
-import PropTypes from "prop-types";
-import Nav from "react-bootstrap/Nav";
-import Navbar from "react-bootstrap/Navbar";
-import NavItem from "react-bootstrap/NavItem";
-import Spinner from "react-bootstrap/Spinner";
-import Button from "react-bootstrap/Button";
-import { Route, Switch, Link, withRouter, Redirect } from "react-router-dom";
-import Profile from "../Profile/Profile";
-import Forgot from "../Forgot/Forgot";
-import Login from "../Login/Login";
-import Register from "../Register/Register";
-import Reset from "../Reset/Reset";
-import Stories from "../Stories/Stories";
-import axios from "axios";
-import PermissionsRoute from "../AuthedRoutes/PermissionsRoute";
-import { isEmptyObject, isStatusOk } from "../../helpers/helperFunctions";
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import Nav from 'react-bootstrap/Nav';
+import Navbar from 'react-bootstrap/Navbar';
+import NavItem from 'react-bootstrap/NavItem';
+import Spinner from 'react-bootstrap/Spinner';
+import Button from 'react-bootstrap/Button';
+import { Route, Switch, Link, withRouter } from 'react-router-dom';
+import Profile from '../Profile/Profile';
+import Forgot from '../Forgot/Forgot';
+import Login from '../Login/Login';
+import Register from '../Register/Register';
+import Reset from '../Reset/Reset';
+import Stories from '../Stories/Stories';
+import axios from 'axios';
+import PermissionsRoute from '../AuthedRoutes/PermissionsRoute';
+import { isEmptyObject, isStatusOk } from '../../helpers/helperFunctions';
 
 class Navigation extends Component {
   constructor(props) {
     super(props);
     this.state = {
       user: {},
-      userAuthState: "guest",
+      userAuthState: 'guest',
       isLoading: true,
-      from: "/",
-      loginError: "",
+      from: '/',
+      errorPassedOn: '',
+      changeState: false,
     };
   }
 
-  static propTypes = {
-    location: PropTypes.object.isRequired,
-  };
-
   async authFunc() {
-    console.log("AUTH");
+    console.log('AUTH');
     this.setState({ isLoading: true });
-    axios.get("/api/authState").then((res) => {
+    axios.get('/api/authState').then((res) => {
       try {
         if (isStatusOk(res.status) && !isEmptyObject(res.data.user)) {
           this.setState({
@@ -46,14 +43,14 @@ class Navigation extends Component {
         } else if (res.status !== 304) {
           this.setState({
             user: {},
-            userAuthState: "guest",
+            userAuthState: 'guest',
             isLoading: false,
           });
         }
       } catch (err) {
         this.setState({
           user: {},
-          userAuthState: "guest",
+          userAuthState: 'guest',
           isLoading: false,
         });
         console.log(err);
@@ -62,32 +59,32 @@ class Navigation extends Component {
   }
 
   async componentDidMount() {
-    console.log("MOUNT");
+    console.log('MOUNT');
     this.authFunc();
   }
 
-  logOut = () => {
+  logOut() {
     axios
-      .get("/api/auth/logout", { withCredentials: true })
-      .then((res) => {
-        this.setState({ user: {}, userAuthState: "guest" });
+      .get('/api/auth/logout', { withCredentials: true })
+      .then(() => {
+        this.setState({ user: {}, userAuthState: 'guest' });
       })
       .catch((err) => {
         console.log(err);
-        this.setState({ user: {}, userAuthState: "guest" });
+        this.setState({ user: {}, userAuthState: 'guest' });
       });
-  };
+  }
 
   onLoginFormSubmit = (form, email, password) => {
-    console.log("LOGIN BY FORM");
+    console.log('LOGIN BY FORM');
     this.setState({ isLoading: true });
     axios
-      .post("/api/users/login", {
+      .post('/api/users/login', {
         email: email,
         password: password,
       })
       .then((res) => {
-        console.log("LOGIN RES: ", res);
+        console.log('LOGIN RES: ', res);
         try {
           if (isStatusOk(res.status)) {
             if (!isEmptyObject(res.data.user)) {
@@ -98,25 +95,64 @@ class Navigation extends Component {
                 isLoading: false,
               });
             } else {
-              console.log("404 res: ", res);
+              console.log('404 res: ', res);
               this.setState({
-                loginError: res.data.error,
+                errorPassedOn: res.data.error,
                 user: {},
-                userAuthState: "guest",
+                userAuthState: 'guest',
                 isLoading: false,
               });
             }
           }
         } catch (err) {
-          console.log("ERROR");
+          console.log('ERROR');
           this.setState({
             user: {},
-            userAuthState: "guest",
+            userAuthState: 'guest',
             isLoading: false,
           });
           console.log(err);
         }
       });
+  };
+
+  onForgotFormSubmit = (email) => {
+    console.log('FORGOT BY FORM');
+    this.setState({ isLoading: true });
+    axios
+      .post('/api/users/forgot', {
+        email: email,
+      })
+      .then((res) => {
+        console.log('FORGOT RES: ', res);
+        try {
+          if (isStatusOk(res.status)) {
+            console.log(res.data);
+            this.setState({
+              user: res.data.user,
+              userAuthState: res.data.authState,
+              isLoading: false,
+            });
+            this.rerouteWithComponentLink('/forgot', '/login');
+          }
+        } catch (err) {
+          console.log('ERROR');
+          this.setState({
+            user: {},
+            userAuthState: 'guest',
+            isLoading: false,
+          });
+          console.log(err);
+          this.rerouteWithComponentLink('/forgot', '/login');
+        }
+      });
+  };
+
+  rerouteWithComponentLink = (setFrom, setTo) => {
+    console.log('HISTORY:', this.props.history);
+    this.setState({ from: setFrom + '#' }, () => {
+      this.props.history.push(setTo);
+    });
   };
 
   render() {
@@ -139,32 +175,68 @@ class Navigation extends Component {
             <Navbar.Collapse id="navbar-menu">
               <Nav className="mr-auto">
                 <NavItem eventkey={1} href="/">
-                  <Nav.Link as={Link} to="/">
+                  <Nav.Link
+                    as={Link}
+                    onClick={() => {
+                      this.setState({ from: '/' });
+                    }}
+                    to="/"
+                  >
                     Home
                   </Nav.Link>
                 </NavItem>
                 <NavItem eventkey={2} href="/login">
-                  <Nav.Link as={Link} to="/login">
+                  <Nav.Link
+                    as={Link}
+                    onClick={() => {
+                      this.setState({ from: '/login' });
+                    }}
+                    to="/login"
+                  >
                     Login
                   </Nav.Link>
                 </NavItem>
                 <NavItem eventkey={3} href="/forgot">
-                  <Nav.Link as={Link} to="/forgot">
+                  <Nav.Link
+                    as={Link}
+                    onClick={() => {
+                      this.setState({ from: '/forgot' });
+                    }}
+                    to="/forgot"
+                  >
                     Forgot
                   </Nav.Link>
                 </NavItem>
                 <NavItem eventkey={4} href="/register">
-                  <Nav.Link as={Link} to="/register">
+                  <Nav.Link
+                    as={Link}
+                    onClick={() => {
+                      this.setState({ from: '/register' });
+                    }}
+                    to="/register"
+                  >
                     Register
                   </Nav.Link>
                 </NavItem>
                 <NavItem eventkey={5} href="/reset">
-                  <Nav.Link as={Link} to="/reset">
+                  <Nav.Link
+                    as={Link}
+                    onClick={() => {
+                      this.setState({ from: '/reset' });
+                    }}
+                    to="/reset"
+                  >
                     Reset
                   </Nav.Link>
                 </NavItem>
                 <NavItem eventkey={6} href="/stories">
-                  <Nav.Link as={Link} to="/stories">
+                  <Nav.Link
+                    as={Link}
+                    onClick={() => {
+                      this.setState({ from: '/stories' });
+                    }}
+                    to="/stories"
+                  >
                     Stories
                   </Nav.Link>
                 </NavItem>
@@ -173,9 +245,9 @@ class Navigation extends Component {
                 {!this.state.isLoading && (
                   <NavItem eventkey={7}>
                     <Nav.Link as={Link} to="/">
-                      {this.state.userAuthState === "loggedIn"
+                      {this.state.userAuthState === 'loggedIn'
                         ? "That's Auth Baby"
-                        : "CRIME!"}
+                        : 'CRIME!'}
                     </Nav.Link>
                   </NavItem>
                 )}
@@ -201,7 +273,8 @@ class Navigation extends Component {
               component={Profile}
               from={this.state.from}
               user={this.state.user}
-              routePermissions={["loggedIn"]}
+              rerouteWithComponentLink={this.rerouteWithComponentLink}
+              routePermissions={['loggedIn']}
             />
             <PermissionsRoute
               exact
@@ -210,7 +283,9 @@ class Navigation extends Component {
               component={Forgot}
               from={this.state.from}
               user={this.state.user}
-              routePermissions={["guest"]}
+              rerouteWithComponentLink={this.rerouteWithComponentLink}
+              errorPassedOn={this.state.errorPassedOn}
+              routePermissions={['guest']}
             ></PermissionsRoute>
             <PermissionsRoute
               exact
@@ -220,8 +295,9 @@ class Navigation extends Component {
               from={this.state.from}
               user={this.state.user}
               onLoginFormSubmit={this.onLoginFormSubmit}
-              routePermissions={["guest"]}
-              loginError={this.state.loginError}
+              rerouteWithComponentLink={this.rerouteWithComponentLink}
+              errorPassedOn={this.state.errorPassedOn}
+              routePermissions={['guest']}
             ></PermissionsRoute>
             <PermissionsRoute
               exact
@@ -230,7 +306,8 @@ class Navigation extends Component {
               component={Register}
               from={this.state.from}
               user={this.state.user}
-              routePermissions={["guest"]}
+              rerouteWithComponentLink={this.rerouteWithComponentLink}
+              routePermissions={['guest']}
             ></PermissionsRoute>
             <Route exact path="/reset" component={Reset}></Route>
             <PermissionsRoute
@@ -240,7 +317,8 @@ class Navigation extends Component {
               component={Stories}
               from={this.state.from}
               user={this.state.user}
-              routePermissions={["loggedIn"]}
+              rerouteWithComponentLink={this.rerouteWithComponentLink}
+              routePermissions={['loggedIn']}
             />
             <Route
               render={function () {
@@ -255,3 +333,7 @@ class Navigation extends Component {
 }
 
 export default withRouter(Navigation);
+
+Navigation.propTypes = {
+  history: PropTypes.object.isRequired,
+};

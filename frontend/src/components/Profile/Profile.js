@@ -1,16 +1,16 @@
-import React, { Component } from "react";
-import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col";
-import Button from "react-bootstrap/Button";
-import ListGroup from "react-bootstrap/ListGroup";
-import Container from "react-bootstrap/Container";
-import Form from "react-bootstrap/Form";
-import { Modal } from "react-bootstrap";
-import { Link } from "react-router-dom";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEdit, faTrash, faPlus } from "@fortawesome/free-solid-svg-icons";
-import Card from "react-bootstrap/Card";
-import axios from "axios";
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
+import Button from 'react-bootstrap/Button';
+import ListGroup from 'react-bootstrap/ListGroup';
+import Container from 'react-bootstrap/Container';
+import Form from 'react-bootstrap/Form';
+import { Modal } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEdit, faTrash, faPlus } from '@fortawesome/free-solid-svg-icons';
+import Card from 'react-bootstrap/Card';
 
 export default class Profile extends Component {
   constructor(props) {
@@ -28,15 +28,14 @@ export default class Profile extends Component {
     });
   }
 
-  handleClose = () => {
+  handleClose() {
     this.setState({
       showModal: false,
     });
-  };
+  }
 
   render() {
-    console.log("PROFILE PROPS:", this.props);
-    const { from } = this.props.location.state || { from: { pathname: "/" } };
+    console.log('PROFILE PROPS:', this.props);
     let user = this.props.user || {};
 
     return (
@@ -62,16 +61,16 @@ export default class Profile extends Component {
             <Col md={{ span: 8, order: 1 }} sm={{ span: 12, order: 1 }}>
               <h5 className="text-left">Stories</h5>
               <ListGroup>
-                {[{ title: "Test Title", id: "123" }].map(function (s) {
+                {[{ title: 'Test Title', id: '123' }].map(function (s) {
                   return (
                     <ListGroup.Item
                       className="d-flex justify-content-between align-items-center"
                       key={s.title}
                     >
-                      <Link to={"/stories/" + s.id}>{s.title}</Link>
+                      <Link to={'/stories/' + s.id}>{s.title}</Link>
                       <div className="action-buttons">
                         <Link
-                          to={"/stories/edit/" + s.id}
+                          to={'/stories/edit/' + s.id}
                           className="edit-link"
                         >
                           <FontAwesomeIcon icon={faEdit} />
@@ -162,3 +161,7 @@ export default class Profile extends Component {
     );
   }
 }
+
+Profile.propTypes = {
+  user: PropTypes.object.isRequired,
+};
