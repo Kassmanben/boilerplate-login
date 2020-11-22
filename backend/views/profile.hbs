@@ -1,0 +1,132 @@
+<div class="row">
+  <div class="col-md-4 order-md-2 col-sm-12 order-sm-1">
+    <div class="card">
+      <div class="card-body">
+        <h5>Profile</h5>
+        <div class="card-title">{{ user.displayName }}</div>
+        <div class="card-text">{{ user.permissions }}</div>
+        <button
+          type="button"
+          class="icon-btn edit"
+          data-toggle="modal"
+          data-target="#editProfile"
+        >
+          <i class="fas fa-edit"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-8 order-md-1 col-sm-12 order-sm-1">
+    <h5>Stories</h5>
+    <ul class="list-group">
+      {{#if stories}}
+      {{#each stories}}
+      <li
+        class="list-group-item d-flex justify-content-between align-items-center"
+      >
+        <a href="/stories/{{ _id }}">{{ title }}</a>
+        <div class="action-buttons">
+          <a href="/stories/edit/{{ _id }}" class="edit-link">
+            <i class="fas fa-edit"></i>
+          </a>
+          <form
+            action="/stories/{{ _id }}"
+            method="POST"
+            id="delete-form"
+            class="delete-form"
+          >
+            <input type="hidden" name="_method" value="DELETE" />
+            <button type="submit" class="icon-btn delete">
+              <i class="fas fa-trash"></i>
+            </button>
+          </form>
+        </div>
+      </li>
+      {{/each}}
+      {{/if}}
+      <li
+        class="list-group-item d-flex justify-content-between align-items-center"
+      >
+        <span> Add a new story </span>
+        <div class="action-buttons">
+          <a href="/stories/add" class="add-link">
+            <i class="fas fa-plus"></i>
+          </a>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div
+  class="modal fade"
+  id="editProfile"
+  tabindex="-1"
+  aria-labelledby="editProfileLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editProfileLabel">Edit Profile</h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form action="/users/edit" method="POST" class="top-margin">
+          <input type="hidden" name="_method" value="PUT" />
+          <div class="form-group">
+            <label for="firstName">First Name</label>
+            <input
+              type="text"
+              id="firstName"
+              name="firstName"
+              autocomplete="family-name"
+              class="form-control"
+              placeholder="First Name"
+              value="{{ user.firstName }}"
+              autocomplete="given-name"
+            />
+            <div class="validation-text">{{ errors.firstName }}</div>
+          </div>
+          <div class="form-group">
+            <label for="lastName">Last Name</label>
+            <input
+              type="text"
+              id="lastName"
+              name="lastName"
+              autocomplete="family-name"
+              class="form-control"
+              placeholder="Last Name"
+              value="{{ user.lastName }}"
+              autocomplete="family-name"
+            />
+            <div class="validation-text">{{ errors.lastName }}</div>
+          </div>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input
+              type="text"
+              id="email"
+              name="email"
+              class="form-control"
+              placeholder="Email"
+              value="{{ user.email }}"
+              autocomplete="email"
+            />
+            <div class="validation-text">{{ errors.email }}</div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">Update Profile</button>
+      </div>
+    </div>
+  </div>
+</div>

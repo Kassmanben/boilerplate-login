@@ -1,32 +1,38 @@
 {
   "name": "boilerplate-googleoauth-crud",
   "version": "1.0.0",
-  "description": "App to create public and private stories - Traversy media",
-  "main": "app.js",
+  "description": "",
+  "main": "index.js",
   "scripts": {
-    "start": "cross-env NODE_ENV=production node app.js",
-    "dev": "cross-env NODE_ENV=development nodemon app.js"
+    "dev": "concurrently \"cd backend && npm run dev\" \"cd frontend && npm start\" "
   },
-  "author": "Ben Kassman",
-  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kassmanben/boilerplate-login.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Kassmanben/boilerplate-login/issues"
+  },
+  "homepage": "https://github.com/Kassmanben/boilerplate-login#readme",
   "dependencies": {
-    "bcryptjs": "^2.4.3",
-    "connect-mongo": "^3.2.0",
-    "dotenv": "^8.2.0",
-    "express": "^4.17.1",
-    "express-handlebars": "^5.1.0",
-    "express-session": "^1.17.1",
-    "mandrill-api": "^1.0.45",
-    "method-override": "^3.0.0",
-    "moment": "^2.29.1",
-    "mongoose": "^5.10.9",
-    "morgan": "^1.10.0",
-    "passport": "^0.4.1",
-    "passport-google-oauth20": "^2.0.0",
-    "passport-local": "^1.0.0"
+    "@types/node": "^14.14.6",
+    "concurrently": "^5.3.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "eslint-plugin-simple-import-sort": "^6.0.1",
+    "prettier": "^2.2.0"
   },
   "devDependencies": {
-    "cross-env": "^7.0.2",
-    "nodemon": "^2.0.4"
+    "@babel/core": "^7.12.7",
+    "@babel/eslint-parser": "^7.12.1",
+    "@babel/eslint-plugin": "^7.12.1",
+    "@babel/plugin-syntax-class-properties": "^7.12.1",
+    "@babel/plugin-syntax-jsx": "^7.12.1",
+    "@babel/preset-env": "^7.12.7",
+    "@babel/preset-react": "^7.12.7",
+    "eslint": "^7.14.0",
+    "eslint-config-prettier": "^6.15.0",
+    "eslint-plugin-react": "^7.21.5"
   }
 }
