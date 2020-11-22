@@ -7,3 +7,4 @@
 .eslintrc*
 .prettierrc*
 *jsconfig*
+*babel.config*

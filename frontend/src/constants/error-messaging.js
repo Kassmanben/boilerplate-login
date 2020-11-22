@@ -15,5 +15,22 @@ export const VALIDATION = {
   INVALID_EMAIL: 'Please enter a valid email address',
   WEAK_PASSWORD:
     'Your password must include one lowercase letter, a number and special character',
-  PASSWORD_MATH: 'Your passwords must match',
+  PASSWORD_MATCH: 'Your passwords must match',
+};
+
+export const NAME_ATTRIBUTE_TO_ERROR_MAP = {
+  EMPTY: {
+    firstName: VALIDATION.EMPTY_FIRST_NAME,
+    lastName: VALIDATION.EMPTY_LAST_NAME,
+    email: VALIDATION.EMPTY_EMAIL,
+    password: VALIDATION.EMPTY_PASSWORD,
+    password2: VALIDATION.EMPTY_PASSWORD,
+  },
+  INVALID: {
+    firstName: VALIDATION.INVALID_NAME,
+    lastName: VALIDATION.INVALID_NAME,
+    email: VALIDATION.INVALID_EMAIL,
+    password: VALIDATION.WEAK_PASSWORD,
+    password2: VALIDATION.PASSWORD_MATCH,
+  },
 };

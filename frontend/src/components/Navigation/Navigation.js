@@ -1,20 +1,21 @@
-import React, { Component } from 'react';
+import axios from 'axios';
 import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import Button from 'react-bootstrap/Button';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import NavItem from 'react-bootstrap/NavItem';
 import Spinner from 'react-bootstrap/Spinner';
-import Button from 'react-bootstrap/Button';
-import { Route, Switch, Link, withRouter } from 'react-router-dom';
-import Profile from '../Profile/Profile';
+import { Link, Route, Switch, withRouter } from 'react-router-dom';
+
+import { isEmptyObject, isStatusOk } from '../../helpers/helperFunctions';
+import PermissionsRoute from '../AuthedRoutes/PermissionsRoute';
 import Forgot from '../Forgot/Forgot';
 import Login from '../Login/Login';
+import Profile from '../Profile/Profile';
 import Register from '../Register/Register';
 import Reset from '../Reset/Reset';
 import Stories from '../Stories/Stories';
-import axios from 'axios';
-import PermissionsRoute from '../AuthedRoutes/PermissionsRoute';
-import { isEmptyObject, isStatusOk } from '../../helpers/helperFunctions';
 
 class Navigation extends Component {
   constructor(props) {
@@ -24,13 +25,16 @@ class Navigation extends Component {
       userAuthState: 'guest',
       isLoading: true,
       from: '/',
-      errorPassedOn: '',
+      errorMessagePassedOn: '',
+      successMessagePassedOn: '',
       changeState: false,
     };
     this.authFunc = this.authFunc.bind(this);
     this.logout = this.logout.bind(this);
     this.onForgotFormSubmit = this.onForgotFormSubmit.bind(this);
     this.onLoginFormSubmit = this.onLoginFormSubmit.bind(this);
+    this.onRegisterFormSubmit = this.onRegisterFormSubmit.bind(this);
+    this.rerouteWithComponentLink = this.rerouteWithComponentLink.bind(this);
   }
 
   async authFunc() {
@@ -101,7 +105,7 @@ class Navigation extends Component {
             } else {
               console.log('404 res: ', res);
               this.setState({
-                errorPassedOn: res.data.error,
+                errorMessagePassedOn: res.data.error,
                 user: {},
                 userAuthState: 'guest',
                 isLoading: false,
@@ -120,6 +124,74 @@ class Navigation extends Component {
       });
   }
 
+  onRegisterFormSubmit(firstName, lastName, email, password, password2) {
+    console.log('REGISTER BY FORM');
+    this.setState({ isLoading: true });
+    axios
+      .post('/api/users/register', {
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        password: password,
+        password2: password2,
+      })
+      .then((res) => {
+        console.log('REGISTER RES: ', res);
+        try {
+          if (isStatusOk(res.status) && res.data.successMessage) {
+            console.log('Register res: ', res);
+            this.setState(
+              {
+                user: {},
+                userAuthState: 'guest',
+                isLoading: false,
+                successMessagePassedOn: res.data.successMessage,
+              },
+              function () {
+                setTimeout(() => {
+                  this.setState({ successMessagePassedOn: '' });
+                }, 5000);
+                this.rerouteWithComponentLink('/login', '/register');
+              }
+            );
+          } else if (isStatusOk(res.status) && res.data.errorMessage) {
+            console.log('Register Failure res: ', res);
+            this.setState(
+              {
+                user: {},
+                userAuthState: 'guest',
+                isLoading: false,
+                errorMessagePassedOn: res.data.errorMessage,
+              },
+              function () {
+                setTimeout(() => {
+                  this.setState({ errorMessagePassedOn: '' });
+                }, 5000);
+                this.rerouteWithComponentLink('/login', '/register');
+              }
+            );
+          }
+        } catch (err) {
+          console.log('ERROR');
+          this.setState(
+            {
+              user: {},
+              userAuthState: 'guest',
+              isLoading: false,
+              errorMessagePassedOn: 'Sorry, something went wrong.',
+            },
+            function () {
+              setTimeout(() => {
+                this.setState({ errorMessagePassedOn: '' });
+              }, 5000);
+              this.rerouteWithComponentLink('/login', '/register');
+            }
+          );
+          console.log(err);
+        }
+      });
+  }
+
   onForgotFormSubmit(email) {
     console.log('FORGOT BY FORM');
     console.log('EMAIL: ', email);
@@ -133,27 +205,43 @@ class Navigation extends Component {
         try {
           if (isStatusOk(res.status)) {
             console.log(res.data);
-            this.setState({
-              user: res.data.user,
-              userAuthState: res.data.authState,
-              isLoading: false,
-            });
-            this.rerouteWithComponentLink('/forgot', '/login');
+            this.setState(
+              {
+                user: {},
+                userAuthState: 'guest',
+                isLoading: false,
+                successMessagePassedOn: res.data.successMessage,
+              },
+              function () {
+                setTimeout(() => {
+                  this.setState({ successMessagePassedOn: '' });
+                }, 5000);
+                this.rerouteWithComponentLink('/login', '/forgot');
+              }
+            );
           }
         } catch (err) {
           console.log('ERROR');
-          this.setState({
-            user: {},
-            userAuthState: 'guest',
-            isLoading: false,
-          });
           console.log(err);
-          this.rerouteWithComponentLink('/forgot', '/login');
+          this.setState(
+            {
+              user: {},
+              userAuthState: 'guest',
+              isLoading: false,
+              errorMessagePassedOn: res.data.errorMessage,
+            },
+            function () {
+              setTimeout(() => {
+                this.setState({ errorMessagePassedOn: '' });
+              }, 5000);
+              this.rerouteWithComponentLink('/login', '/forgot');
+            }
+          );
         }
       });
   }
 
-  rerouteWithComponentLink(setFrom, setTo) {
+  rerouteWithComponentLink(setTo, setFrom) {
     console.log('HISTORY:', this.props.history);
     this.setState({ from: setFrom + '#' }, () => {
       this.props.history.push(setTo);
@@ -183,7 +271,11 @@ class Navigation extends Component {
                   <Nav.Link
                     as={Link}
                     onClick={() => {
-                      this.setState({ from: '/' });
+                      this.setState({
+                        from: '/',
+                        successMessagePassedOn: '',
+                        errorMessagePassedOn: '',
+                      });
                     }}
                     to="/"
                   >
@@ -194,7 +286,11 @@ class Navigation extends Component {
                   <Nav.Link
                     as={Link}
                     onClick={() => {
-                      this.setState({ from: '/login' });
+                      this.setState({
+                        from: '/login',
+                        successMessagePassedOn: '',
+                        errorMessagePassedOn: '',
+                      });
                     }}
                     to="/login"
                   >
@@ -205,7 +301,11 @@ class Navigation extends Component {
                   <Nav.Link
                     as={Link}
                     onClick={() => {
-                      this.setState({ from: '/forgot' });
+                      this.setState({
+                        from: '/forgot',
+                        successMessagePassedOn: '',
+                        errorMessagePassedOn: '',
+                      });
                     }}
                     to="/forgot"
                   >
@@ -216,7 +316,11 @@ class Navigation extends Component {
                   <Nav.Link
                     as={Link}
                     onClick={() => {
-                      this.setState({ from: '/register' });
+                      this.setState({
+                        from: '/register',
+                        successMessagePassedOn: '',
+                        errorMessagePassedOn: '',
+                      });
                     }}
                     to="/register"
                   >
@@ -227,7 +331,11 @@ class Navigation extends Component {
                   <Nav.Link
                     as={Link}
                     onClick={() => {
-                      this.setState({ from: '/reset' });
+                      this.setState({
+                        from: '/reset',
+                        successMessagePassedOn: '',
+                        errorMessagePassedOn: '',
+                      });
                     }}
                     to="/reset"
                   >
@@ -238,7 +346,11 @@ class Navigation extends Component {
                   <Nav.Link
                     as={Link}
                     onClick={() => {
-                      this.setState({ from: '/stories' });
+                      this.setState({
+                        from: '/stories',
+                        successMessagePassedOn: '',
+                        errorMessagePassedOn: '',
+                      });
                     }}
                     to="/stories"
                   >
@@ -279,6 +391,8 @@ class Navigation extends Component {
               from={this.state.from}
               user={this.state.user}
               rerouteWithComponentLink={this.rerouteWithComponentLink}
+              errorMessagePassedOn={this.state.errorMessagePassedOn}
+              successMessagePassedOn={this.state.successMessagePassedOn}
               routePermissions={['loggedIn']}
             />
             <PermissionsRoute
@@ -290,7 +404,8 @@ class Navigation extends Component {
               user={this.state.user}
               onForgotFormSubmit={this.onForgotFormSubmit}
               rerouteWithComponentLink={this.rerouteWithComponentLink}
-              errorPassedOn={this.state.errorPassedOn}
+              errorMessagePassedOn={this.state.errorMessagePassedOn}
+              successMessagePassedOn={this.state.successMessagePassedOn}
               routePermissions={['guest']}
             ></PermissionsRoute>
             <PermissionsRoute
@@ -302,7 +417,8 @@ class Navigation extends Component {
               user={this.state.user}
               onLoginFormSubmit={this.onLoginFormSubmit}
               rerouteWithComponentLink={this.rerouteWithComponentLink}
-              errorPassedOn={this.state.errorPassedOn}
+              errorMessagePassedOn={this.state.errorMessagePassedOn}
+              successMessagePassedOn={this.state.successMessagePassedOn}
               routePermissions={['guest']}
             ></PermissionsRoute>
             <PermissionsRoute
@@ -312,7 +428,10 @@ class Navigation extends Component {
               component={Register}
               from={this.state.from}
               user={this.state.user}
+              onRegisterFormSubmit={this.onRegisterFormSubmit}
               rerouteWithComponentLink={this.rerouteWithComponentLink}
+              errorMessagePassedOn={this.state.errorMessagePassedOn}
+              successMessagePassedOn={this.state.successMessagePassedOn}
               routePermissions={['guest']}
             ></PermissionsRoute>
             <Route exact path="/reset" component={Reset}></Route>
@@ -325,6 +444,8 @@ class Navigation extends Component {
               user={this.state.user}
               rerouteWithComponentLink={this.rerouteWithComponentLink}
               routePermissions={['loggedIn']}
+              errorMessagePassedOn={this.state.errorMessagePassedOn}
+              successMessagePassedOn={this.state.successMessagePassedOn}
             />
             <Route
               render={function () {

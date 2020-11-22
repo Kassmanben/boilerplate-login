@@ -1,15 +1,16 @@
-import React, { Component } from 'react';
+import { faUnlockAlt } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
 import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
-import Button from 'react-bootstrap/Button';
 import { Redirect } from 'react-router-dom';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUnlockAlt } from '@fortawesome/free-solid-svg-icons';
-import { validateByRegex } from '../../helpers/helperFunctions';
+
 import * as ErrorMessagingConstants from '../../constants/error-messaging';
 import * as RegexPatternConstants from '../../constants/regex-patterns';
+import { isValidByRegexPattern } from '../../helpers/helperFunctions';
 import AlertDismissible from '../Alert/AlertDismissible';
 
 export default class Forgot extends Component {
@@ -47,9 +48,9 @@ export default class Forgot extends Component {
     }
     if (e.target.name && e.target.value) {
       if (e.target.name === 'email') {
-        let isValid = validateByRegex(
+        let isValid = isValidByRegexPattern(
           e.target.value,
-          RegexPatternConstants.EMAIL_VALIDATION
+          RegexPatternConstants.PATTERN.EMAIL_VALIDATION
         );
         if (!isValid) {
           this.setState({
@@ -94,8 +95,8 @@ export default class Forgot extends Component {
     }
   }
 
-  reroute(pathFrom, pathTo) {
-    this.props.rerouteWithComponentLink(pathFrom, pathTo);
+  reroute(pathTo, pathFrom) {
+    this.props.rerouteWithComponentLink(pathTo, pathFrom);
   }
 
   render() {
@@ -104,7 +105,8 @@ export default class Forgot extends Component {
     };
     console.log('FORGOT PROPS: ', this.props);
     let authState = this.props.userAuthState || 'guest';
-    let errorPassedOn = this.props.errorPassedOn || '';
+    let errorMessagePassedOn = this.props.errorMessagePassedOn || '';
+    let successMessagePassedOn = this.props.successMessagePassedOn || '';
 
     if (authState === 'loggedIn') {
       return <Redirect to={from} />;
@@ -120,8 +122,19 @@ export default class Forgot extends Component {
 
     return (
       <>
-        {errorPassedOn && (
-          <AlertDismissible show={true} message={errorPassedOn} />
+        {errorMessagePassedOn && (
+          <AlertDismissible
+            variant="danger"
+            show={this.state.show}
+            message={errorMessagePassedOn}
+          />
+        )}
+        {successMessagePassedOn && (
+          <AlertDismissible
+            variant="danger"
+            show={this.state.show}
+            message={successMessagePassedOn}
+          />
         )}
         <h5>
           <FontAwesomeIcon icon={faUnlockAlt} />
@@ -168,7 +181,7 @@ export default class Forgot extends Component {
                   <Button
                     className="button-as-link"
                     onClick={() => {
-                      this.reroute('/forgot', '/login');
+                      this.reroute('/login', '/forgot');
                     }}
                   >
                     {'< Go Back'}
@@ -188,5 +201,6 @@ Forgot.propTypes = {
   rerouteWithComponentLink: PropTypes.func.isRequired,
   location: PropTypes.object.isRequired,
   userAuthState: PropTypes.string.isRequired,
-  errorPassedOn: PropTypes.string,
+  errorMessagePassedOn: PropTypes.string,
+  successMessagePassedOn: PropTypes.string,
 };

@@ -1,5 +1,5 @@
 * {
-  font-family: "PT Sans", sans-serif !important;
+  font-family: 'PT Sans', sans-serif !important;
 }
 
 .visible {
@@ -223,8 +223,24 @@ label {
   color: #069;
   text-decoration: none;
   cursor: pointer;
+  vertical-align: revert;
+  margin: 0 0 0 5px;
 }
 
 .button-as-link:hover {
   color: black;
+}
+
+.stateToDebug {
+  display: inline-block;
+}
+
+.card-container.debug {
+  margin: 0;
+  position: absolute;
+  display: inline-block;
+}
+
+.invalid-feedback {
+  color: #9e0000 !important;
 }

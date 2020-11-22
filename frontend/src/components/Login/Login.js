@@ -1,17 +1,18 @@
-import React, { Component } from 'react';
+import { faGoogle } from '@fortawesome/free-brands-svg-icons';
+import { faBookReader } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
 import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
-import Button from 'react-bootstrap/Button';
 import { Redirect } from 'react-router-dom';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBookReader } from '@fortawesome/free-solid-svg-icons';
-import { faGoogle } from '@fortawesome/free-brands-svg-icons';
+
 import * as ErrorMessagingConstants from '../../constants/error-messaging';
 import * as RegexPatternConstants from '../../constants/regex-patterns';
+import { isValidByRegexPattern } from '../../helpers/helperFunctions';
 import AlertDismissible from '../Alert/AlertDismissible';
-import { validateByRegex } from '../../helpers/helperFunctions';
 
 export default class Login extends Component {
   constructor(props) {
@@ -24,6 +25,7 @@ export default class Login extends Component {
       focused_email: false,
       focused_password: false,
       validated: false,
+      show: true,
     };
     this.onBlur = this.onBlur.bind(this);
     this.onChange = this.onChange.bind(this);
@@ -65,9 +67,9 @@ export default class Login extends Component {
     }
     if (e.target.name && e.target.value) {
       if (e.target.name === 'email') {
-        let isValid = validateByRegex(
+        let isValid = isValidByRegexPattern(
           e.target.value,
-          RegexPatternConstants.EMAIL_VALIDATION
+          RegexPatternConstants.PATTERN.EMAIL_VALIDATION
         );
         if (!isValid) {
           this.setState({
@@ -125,15 +127,16 @@ export default class Login extends Component {
     window.open(`http://localhost:8000/api/auth/google`, '_self');
   }
 
-  reroute(pathFrom, pathTo) {
-    this.props.rerouteWithComponentLink(pathFrom, pathTo);
+  reroute(pathTo, pathFrom) {
+    this.props.rerouteWithComponentLink(pathTo, pathFrom);
   }
 
   render() {
-    const { from } = this.props.location.state || { from: { pathname: '/' } };
+    const { from } = this.props.from || { from: '/' };
     console.log('LOGIN PROPS: ', this.props);
     let authState = this.props.userAuthState || 'guest';
-    let errorPassedOn = this.props.errorPassedOn || '';
+    let errorMessagePassedOn = this.props.errorMessagePassedOn || '';
+    let successMessagePassedOn = this.props.successMessagePassedOn || '';
 
     if (authState === 'loggedIn') {
       return <Redirect to={from} />;
@@ -141,8 +144,19 @@ export default class Login extends Component {
 
     return (
       <Container className="card-container">
-        {errorPassedOn && (
-          <AlertDismissible show={true} message={errorPassedOn} />
+        {errorMessagePassedOn && (
+          <AlertDismissible
+            variant="danger"
+            show={this.state.show}
+            message={errorMessagePassedOn}
+          />
+        )}
+        {successMessagePassedOn && (
+          <AlertDismissible
+            variant="success"
+            show={this.state.show}
+            message={successMessagePassedOn}
+          />
         )}
         <Card className="shadow-card">
           <Card.Body>
@@ -150,7 +164,6 @@ export default class Login extends Component {
               <FontAwesomeIcon icon={faBookReader} />
               Storybooks
             </h3>
-            <div>{this.state.email}</div>
             <Form onSubmit={this.onSubmit}>
               <Form.Group>
                 <Form.Label htmlFor="email">Email</Form.Label>
@@ -203,7 +216,7 @@ export default class Login extends Component {
                   <Button
                     className="button-as-link"
                     onClick={() => {
-                      this.reroute('/login', '/forgot');
+                      this.reroute('/forgot', '/login');
                     }}
                   >
                     Forgot password?
@@ -219,7 +232,15 @@ export default class Login extends Component {
             </Button>
             <div className="section-thin">
               <small>
-                No Account? <a href="/register">Create your account</a>
+                No Account?{' '}
+                <Button
+                  className="button-as-link"
+                  onClick={() => {
+                    this.reroute('/register', '/login');
+                  }}
+                >
+                  {'Create your account'}
+                </Button>
               </small>
             </div>
           </Card.Body>
@@ -232,7 +253,8 @@ export default class Login extends Component {
 Login.propTypes = {
   onLoginFormSubmit: PropTypes.func.isRequired,
   rerouteWithComponentLink: PropTypes.func.isRequired,
-  location: PropTypes.object.isRequired,
   userAuthState: PropTypes.string.isRequired,
-  errorPassedOn: PropTypes.string,
+  errorMessagePassedOn: PropTypes.string,
+  successMessagePassedOn: PropTypes.string,
+  from: PropTypes.string.isRequired,
 };

@@ -25,25 +25,6 @@ function isErrorObjectEmpty(obj) {
   return true;
 }
 
-// Register Page
-router.get('/register', ensureGuest, (req, res) =>
-  res.render('register', {
-    layout: 'login',
-    errors: {
-      firstName: '',
-      lastName: '',
-      email: '',
-      password: '',
-      password2: '',
-    },
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    password2: '',
-  })
-);
-
 // @desc Show reset password page
 // @route GET /reset/:id
 router.get('/reset/:id', ensureGuest, async (req, res) => {
@@ -77,7 +58,6 @@ router.get('/reset/:id', ensureGuest, async (req, res) => {
   }
 });
 
-//MAKE FORGOT POST WORK
 router.post('/forgot', ensureGuest, async (req, res) => {
   const { email } = req.body;
   if (!validateByRegex(email, regexPatterns.EMAIL_VALIDATION)) {
@@ -224,42 +204,25 @@ router.post('/reset/:id', async (req, res) => {
 // Register
 router.post('/register', (req, res) => {
   const { firstName, lastName, email, password, password2 } = req.body;
-  let errors = {
-    firstName: !firstName
-      ? 'Please enter your first name'
-      : validateText(firstName, regexPatterns.NAME_VALIDATION)
-      ? ''
-      : "Your name must contain only letters and valid special characters (,.'-)",
-    lastName: !lastName
-      ? 'Please enter your last name'
-      : validateText(lastName, regexPatterns.NAME_VALIDATION)
-      ? ''
-      : "Your name must contain only letters and valid special characters (,.'-)",
-    email:
-      email && validateText(email, regexPatterns.EMAIL_VALIDATION)
-        ? ''
-        : 'Please enter a valid email address',
-    password:
-      password && validateText(password, regexPatterns.PASSWORD_VALIDATION)
-        ? ''
-        : 'Your password must include one lowercase letter, a number and special character',
-    password2:
-      password2 && validateText(password2, regexPatterns.PASSWORD_VALIDATION)
-        ? ''
-        : 'Your passwords must match',
-  };
-
-  if (isErrorObjectEmpty(errors)) {
-    User.findOne({ email: email }).then((user) => {
+  if (
+    firstName &&
+    lastName &&
+    email &&
+    password &&
+    password2 &&
+    validateText(firstName, regexPatterns.NAME_VALIDATION) &&
+    validateText(lastName, regexPatterns.NAME_VALIDATION) &&
+    validateText(email, regexPatterns.EMAIL_VALIDATION) &&
+    validateText(password, regexPatterns.PASSWORD_VALIDATION) &&
+    validateText(password2, regexPatterns.PASSWORD_VALIDATION)
+  ) {
+    User.findOne({ email: email.toLowerCase() }).then((user) => {
       if (user) {
-        res.render('register', {
-          layout: 'login',
-          errors,
-          firstName,
-          lastName,
-          email,
-          password: '',
-          password2: '',
+        return res.json({
+          authState: authStates.GUEST,
+          user: {},
+          errorMessage:
+            'Something went wrong. An account with this email may already exist',
         });
       } else {
         const newUser = new User({
@@ -268,50 +231,50 @@ router.post('/register', (req, res) => {
           displayName: firstName + ' ' + lastName,
           firstName,
           lastName,
-          email,
+          email: email.toLowerCase(),
           password,
         });
 
         bcrypt.genSalt(10, (err, salt) => {
           if (err) {
-            res.render('register', {
-              layout: 'login',
-              errors,
-              firstName,
-              lastName,
-              email,
-              password: '',
-              password2: '',
+            console.log(err);
+            res.json({
+              authState: authStates.GUEST,
+              user: {},
+              errorMessage:
+                'Something went wrong. An account with this email may already exist',
             });
           }
           bcrypt.hash(newUser.password, salt, (err, hash) => {
             if (err) {
-              res.render('register', {
-                layout: 'login',
-                errors,
-                firstName,
-                lastName,
-                email,
-                password: '',
-                password2: '',
+              console.log(err);
+              res.json({
+                authState: authStates.GUEST,
+                user: {},
+                errorMessage:
+                  'Something went wrong. An account with this email may already exist',
               });
             }
             newUser.password = hash;
             newUser
               .save()
               .then(() => {
-                res.redirect('/');
+                console.log('Registered');
+                res.json({
+                  authState: authStates.GUEST,
+                  user: {},
+                  successMessage:
+                    'Congratulations! You are registered, and you can log in now.',
+                });
               })
               .catch((err) => {
                 if (err) {
-                  res.render('register', {
-                    layout: 'login',
-                    errors,
-                    firstName,
-                    lastName,
-                    email,
-                    password: '',
-                    password2: '',
+                  console.log(err);
+                  res.json({
+                    authState: authStates.GUEST,
+                    user: {},
+                    errorMessage:
+                      'Something went wrong. An account with this email may already exist',
                   });
                 }
               });
@@ -322,7 +285,6 @@ router.post('/register', (req, res) => {
   } else {
     res.render('register', {
       layout: 'login',
-      errors,
       firstName,
       lastName,
       email,

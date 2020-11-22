@@ -8,7 +8,7 @@ function AlertDismissible(props) {
   }, [props.show]);
   if (show) {
     return (
-      <Alert variant="danger" onClose={() => setShow(false)} dismissible>
+      <Alert variant={props.variant} onClose={() => setShow(false)} dismissible>
         {props.message}
       </Alert>
     );
