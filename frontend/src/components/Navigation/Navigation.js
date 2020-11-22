@@ -34,7 +34,9 @@ class Navigation extends Component {
     this.onForgotFormSubmit = this.onForgotFormSubmit.bind(this);
     this.onLoginFormSubmit = this.onLoginFormSubmit.bind(this);
     this.onRegisterFormSubmit = this.onRegisterFormSubmit.bind(this);
+    this.onResetFormSubmit = this.onResetFormSubmit.bind(this);
     this.rerouteWithComponentLink = this.rerouteWithComponentLink.bind(this);
+    this.onRouteChanged = this.onRouteChanged.bind(this);
   }
 
   async authFunc() {
@@ -148,9 +150,6 @@ class Navigation extends Component {
                 successMessagePassedOn: res.data.successMessage,
               },
               function () {
-                setTimeout(() => {
-                  this.setState({ successMessagePassedOn: '' });
-                }, 5000);
                 this.rerouteWithComponentLink('/login', '/register');
               }
             );
@@ -164,9 +163,6 @@ class Navigation extends Component {
                 errorMessagePassedOn: res.data.errorMessage,
               },
               function () {
-                setTimeout(() => {
-                  this.setState({ errorMessagePassedOn: '' });
-                }, 5000);
                 this.rerouteWithComponentLink('/login', '/register');
               }
             );
@@ -181,9 +177,6 @@ class Navigation extends Component {
               errorMessagePassedOn: 'Sorry, something went wrong.',
             },
             function () {
-              setTimeout(() => {
-                this.setState({ errorMessagePassedOn: '' });
-              }, 5000);
               this.rerouteWithComponentLink('/login', '/register');
             }
           );
@@ -213,9 +206,6 @@ class Navigation extends Component {
                 successMessagePassedOn: res.data.successMessage,
               },
               function () {
-                setTimeout(() => {
-                  this.setState({ successMessagePassedOn: '' });
-                }, 5000);
                 this.rerouteWithComponentLink('/login', '/forgot');
               }
             );
@@ -231,9 +221,6 @@ class Navigation extends Component {
               errorMessagePassedOn: res.data.errorMessage,
             },
             function () {
-              setTimeout(() => {
-                this.setState({ errorMessagePassedOn: '' });
-              }, 5000);
               this.rerouteWithComponentLink('/login', '/forgot');
             }
           );
@@ -241,11 +228,85 @@ class Navigation extends Component {
       });
   }
 
-  rerouteWithComponentLink(setTo, setFrom) {
+  onResetFormSubmit(password, password2, id) {
+    console.log('RESET BY FORM');
+    this.setState({ isLoading: true });
+    axios
+      .post('/api/users/reset/' + id, {
+        password: password,
+        password2: password2,
+      })
+      .then((res) => {
+        console.log('RESET RES: ', res);
+        try {
+          if (isStatusOk(res.status) && res.data.successMessage) {
+            console.log('Reset res: ', res);
+            this.setState(
+              {
+                user: {},
+                userAuthState: 'guest',
+                isLoading: false,
+                successMessagePassedOn: res.data.successMessage,
+              },
+              function () {
+                this.rerouteWithComponentLink('/login', '/reset/' + id);
+              }
+            );
+          } else if (isStatusOk(res.status) && res.data.errorMessage) {
+            console.log('Register Failure res: ', res);
+            this.setState(
+              {
+                user: {},
+                userAuthState: 'guest',
+                isLoading: false,
+                errorMessagePassedOn: res.data.errorMessage,
+              },
+              function () {
+                this.rerouteWithComponentLink('/login', '/reset' + id);
+              }
+            );
+          }
+        } catch (err) {
+          console.log('ERROR');
+          this.setState(
+            {
+              user: {},
+              userAuthState: 'guest',
+              isLoading: false,
+              errorMessagePassedOn: 'Sorry, something went wrong.',
+            },
+            function () {
+              this.rerouteWithComponentLink('/login', '/reset' + id);
+            }
+          );
+          console.log(err);
+        }
+      });
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.location !== prevProps.location) {
+      this.onRouteChanged();
+    }
+  }
+
+  onRouteChanged() {
+    setTimeout(() => {
+      this.setState({
+        errorMessagePassedOn: '',
+        successMessagePassedOn: '',
+      });
+    }, 5000);
+  }
+
+  rerouteWithComponentLink(setTo, setFrom, optionalErrorMessage = '') {
     console.log('HISTORY:', this.props.history);
-    this.setState({ from: setFrom + '#' }, () => {
-      this.props.history.push(setTo);
-    });
+    this.setState(
+      { from: setFrom + '#', errorMessagePassedOn: optionalErrorMessage },
+      () => {
+        this.props.history.push(setTo);
+      }
+    );
   }
 
   render() {
@@ -434,7 +495,19 @@ class Navigation extends Component {
               successMessagePassedOn={this.state.successMessagePassedOn}
               routePermissions={['guest']}
             ></PermissionsRoute>
-            <Route exact path="/reset" component={Reset}></Route>
+            <PermissionsRoute
+              exact
+              path="/reset/:id"
+              userAuthState={this.state.userAuthState}
+              component={Reset}
+              from={this.state.from}
+              user={this.state.user}
+              onResetFormSubmit={this.onResetFormSubmit}
+              rerouteWithComponentLink={this.rerouteWithComponentLink}
+              errorMessagePassedOn={this.state.errorMessagePassedOn}
+              successMessagePassedOn={this.state.successMessagePassedOn}
+              routePermissions={['guest']}
+            ></PermissionsRoute>
             <PermissionsRoute
               exact
               path="/stories"
@@ -463,4 +536,5 @@ export default withRouter(Navigation);
 
 Navigation.propTypes = {
   history: PropTypes.object.isRequired,
+  location: PropTypes.object.isRequired,
 };

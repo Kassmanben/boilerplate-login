@@ -36,25 +36,41 @@ router.get('/reset/:id', ensureGuest, async (req, res) => {
 
       if (!user) {
         console.log('User not found');
-        return res.redirect('/');
+        return res.json({
+          authState: authStates.GUEST,
+          user: {},
+          errorMessage: 'Invalid reset URL',
+        });
       }
 
       if (moment(user.resetTimeout).isBefore(moment())) {
         console.log('Retry link has timed out');
-        res.redirect('/');
+        return res.json({
+          authState: authStates.GUEST,
+          user: {},
+          errorMessage: 'Reset URL has timed out',
+        });
       } else {
-        res.render('reset', {
-          layout: 'login',
-          user,
+        res.json({
+          authState: authStates.GUEST,
+          user: {},
         });
       }
     } else {
       console.log('Retry link has invalid token id');
-      return res.redirect('/');
+      return res.json({
+        authState: authStates.GUEST,
+        user: {},
+        errorMessage: 'Invalid reset URL',
+      });
     }
   } catch (err) {
     console.error(err);
-    res.redirect('/');
+    return res.json({
+      authState: authStates.GUEST,
+      user: {},
+      errorMessage: 'Invalid reset URL',
+    });
   }
 });
 
@@ -129,7 +145,7 @@ router.post('/forgot', ensureGuest, async (req, res) => {
     return res.json({
       authState: authStates.GUEST,
       user: {},
-      error: 'You have entered an invalid email or password',
+      errorMessage: 'You have entered an invalid email or password',
     });
   }
 });
@@ -138,65 +154,60 @@ router.post('/forgot', ensureGuest, async (req, res) => {
 router.post('/reset/:id', async (req, res) => {
   const { password, password2 } = req.body;
 
-  let errors = {
-    password:
-      password && validateText(password, regexPatterns.PASSWORD_VALIDATION)
-        ? ''
-        : 'Your password must include one lowercase letter, a number and special character',
-    password2:
-      password && validateText(password, regexPatterns.PASSWORD_VALIDATION)
-        ? ''
-        : 'Your passwords must match',
-  };
-
-  if (isErrorObjectEmpty(errors) && password === password2) {
+  if (
+    password &&
+    validateText(password, regexPatterns.PASSWORD_VALIDATION) &&
+    password2 &&
+    validateText(password2, regexPatterns.PASSWORD_VALIDATION) &&
+    password === password2
+  ) {
     const user = await User.findOne({
-      _id: req.params.id,
+      resetToken: new mongoose.Types.ObjectId(req.params.id),
     });
 
     bcrypt.genSalt(10, (err, salt) => {
       if (err) {
-        res.render(`/reset/${req.params.id}`, {
-          layout: 'login',
-          errors,
-          password: '',
-          password2: '',
+        res.json({
+          authState: authStates.GUEST,
+          user: {},
+          errorMessage: 'Sorry, something went wrong. Please try again',
         });
       }
       bcrypt.hash(password, salt, (err, hash) => {
         if (err) {
-          res.render(`/reset/${req.params.id}`, {
-            layout: 'login',
-            errors,
-            password: '',
-            password2: '',
+          res.json({
+            authState: authStates.GUEST,
+            user: {},
+            errorMessage: 'Sorry, something went wrong. Please try again',
           });
         }
-        user.password = hash;
+        user.set({ password: hash });
+        user.resetTimeout = undefined;
+        user.resetToken = undefined;
         user
           .save()
           .then(() => {
-            res.redirect('/');
+            res.json({
+              authState: authStates.GUEST,
+              user: {},
+              successMessage: 'Your password has been reset!',
+            });
           })
           .catch((err) => {
             console.log(err);
-            res.render(`/reset/${req.params.id}`, {
-              layout: 'login',
-              errors,
-              password: '',
-              password2: '',
+            res.json({
+              authState: authStates.GUEST,
+              user: {},
+              errorMessage: 'Sorry, something went wrong. Please try again',
             });
           });
       });
     });
   } else {
-    const user = await User.findOne({
-      resetToken: new mongoose.Types.ObjectId(req.params.id),
-    }).lean();
-    res.render(`/reset/${req.params.id}`, {
-      layout: 'login',
-      errors,
-      user,
+    res.json({
+      authState: authStates.GUEST,
+      user: {},
+      errorMessage: 'Sorry, something went wrong. Please try again',
     });
   }
 });
@@ -283,13 +294,12 @@ router.post('/register', (req, res) => {
       }
     });
   } else {
-    res.render('register', {
-      layout: 'login',
-      firstName,
-      lastName,
-      email,
-      password: '',
-      password2: '',
+    console.log('Validation on front end failed??');
+    res.json({
+      authState: authStates.GUEST,
+      user: {},
+      errorMessage:
+        'Something went wrong. An account with this email may already exist',
     });
   }
 });

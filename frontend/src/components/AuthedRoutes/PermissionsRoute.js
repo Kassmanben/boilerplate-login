@@ -33,13 +33,17 @@ function PermissionsRoute({ component: Component, ...rest }) {
     },
   };
 
-  console.log('nestedStateProps', nestedStateProps);
-  console.log('toComp?', rest.routePermissions.includes(rest.userAuthState));
-  console.log('whichComp', Component);
-  console.log(
-    'invalidUserAuthRedirectPathname',
-    invalidUserAuthRedirectPathname
-  );
+  if (rest.location.errorMessagePassedOn) {
+    rest.errorMessagePassedOn = rest.location.errorMessagePassedOn;
+  }
+
+  // console.log('nestedStateProps', nestedStateProps);
+  // console.log('toComp?', rest.routePermissions.includes(rest.userAuthState));
+  // console.log('whichComp', Component);
+  // console.log(
+  //   'invalidUserAuthRedirectPathname',
+  //   invalidUserAuthRedirectPathname
+  // );
   return (
     <Route
       {...rest}
