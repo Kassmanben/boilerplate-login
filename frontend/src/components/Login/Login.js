@@ -25,6 +25,12 @@ export default class Login extends Component {
       focused_password: false,
       validated: false,
     };
+    this.onBlur = this.onBlur.bind(this);
+    this.onChange = this.onChange.bind(this);
+    this.onFocus = this.onFocus.bind(this);
+    this.onGoogleClick = this.onGoogleClick.bind(this);
+    this.onSubmit = this.onSubmit.bind(this);
+    this.reroute = this.reroute.bind(this);
   }
 
   onChange(e) {
@@ -99,7 +105,6 @@ export default class Login extends Component {
   }
 
   onSubmit(e) {
-    const form = e.currentTarget;
     e.preventDefault();
     e.stopPropagation();
     if (
@@ -112,7 +117,7 @@ export default class Login extends Component {
       this.setState({ validated: false });
     } else {
       this.setState({ validated: true });
-      this.props.onLoginFormSubmit(form, this.state.email, this.state.password);
+      this.props.onLoginFormSubmit(this.state.email, this.state.password);
     }
   }
 
@@ -127,7 +132,7 @@ export default class Login extends Component {
   render() {
     const { from } = this.props.location.state || { from: { pathname: '/' } };
     console.log('LOGIN PROPS: ', this.props);
-    let authState = this.props.authState || 'guest';
+    let authState = this.props.userAuthState || 'guest';
     let errorPassedOn = this.props.errorPassedOn || '';
 
     if (authState === 'loggedIn') {
@@ -228,6 +233,6 @@ Login.propTypes = {
   onLoginFormSubmit: PropTypes.func.isRequired,
   rerouteWithComponentLink: PropTypes.func.isRequired,
   location: PropTypes.object.isRequired,
-  authState: PropTypes.string.isRequired,
+  userAuthState: PropTypes.string.isRequired,
   errorPassedOn: PropTypes.string,
 };

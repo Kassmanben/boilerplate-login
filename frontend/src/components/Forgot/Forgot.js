@@ -22,6 +22,11 @@ export default class Forgot extends Component {
       validated: false,
       show: true,
     };
+    this.onBlur = this.onBlur.bind(this);
+    this.onChange = this.onChange.bind(this);
+    this.onFocus = this.onFocus.bind(this);
+    this.onSubmit = this.onSubmit.bind(this);
+    this.reroute = this.reroute.bind(this);
   }
 
   onChange(e) {
@@ -70,7 +75,6 @@ export default class Forgot extends Component {
   }
 
   onSubmit(event) {
-    const form = event.currentTarget;
     event.preventDefault();
     event.stopPropagation();
     if (
@@ -86,7 +90,7 @@ export default class Forgot extends Component {
     } else {
       console.log('VALID');
       this.setState({ validated: true });
-      this.props.onForgotFormSubmit(form, this.state.email);
+      this.props.onForgotFormSubmit(this.state.email);
     }
   }
 
@@ -95,12 +99,22 @@ export default class Forgot extends Component {
   }
 
   render() {
-    const { from } = this.props.location.state || { from: { pathname: '/' } };
+    const { from } = this.props.location.state || {
+      from: { pathname: '/login' },
+    };
     console.log('FORGOT PROPS: ', this.props);
-    let authState = this.props.authState;
+    let authState = this.props.userAuthState || 'guest';
     let errorPassedOn = this.props.errorPassedOn || '';
 
     if (authState === 'loggedIn') {
+      return <Redirect to={from} />;
+    }
+
+    if (
+      this.props.onForgotFormSubmit === undefined ||
+      this.props.rerouteWithComponentLink === undefined
+    ) {
+      console.log('NO FUNCTIONS');
       return <Redirect to={from} />;
     }
 
@@ -173,6 +187,6 @@ Forgot.propTypes = {
   onForgotFormSubmit: PropTypes.func.isRequired,
   rerouteWithComponentLink: PropTypes.func.isRequired,
   location: PropTypes.object.isRequired,
-  authState: PropTypes.string.isRequired,
+  userAuthState: PropTypes.string.isRequired,
   errorPassedOn: PropTypes.string,
 };

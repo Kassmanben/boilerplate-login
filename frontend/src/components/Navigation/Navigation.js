@@ -27,6 +27,10 @@ class Navigation extends Component {
       errorPassedOn: '',
       changeState: false,
     };
+    this.authFunc = this.authFunc.bind(this);
+    this.logout = this.logout.bind(this);
+    this.onForgotFormSubmit = this.onForgotFormSubmit.bind(this);
+    this.onLoginFormSubmit = this.onLoginFormSubmit.bind(this);
   }
 
   async authFunc() {
@@ -63,7 +67,7 @@ class Navigation extends Component {
     this.authFunc();
   }
 
-  logOut() {
+  logout() {
     axios
       .get('/api/auth/logout', { withCredentials: true })
       .then(() => {
@@ -75,7 +79,7 @@ class Navigation extends Component {
       });
   }
 
-  onLoginFormSubmit = (form, email, password) => {
+  onLoginFormSubmit(email, password) {
     console.log('LOGIN BY FORM');
     this.setState({ isLoading: true });
     axios
@@ -114,10 +118,11 @@ class Navigation extends Component {
           console.log(err);
         }
       });
-  };
+  }
 
-  onForgotFormSubmit = (email) => {
+  onForgotFormSubmit(email) {
     console.log('FORGOT BY FORM');
+    console.log('EMAIL: ', email);
     this.setState({ isLoading: true });
     axios
       .post('/api/users/forgot', {
@@ -146,14 +151,14 @@ class Navigation extends Component {
           this.rerouteWithComponentLink('/forgot', '/login');
         }
       });
-  };
+  }
 
-  rerouteWithComponentLink = (setFrom, setTo) => {
+  rerouteWithComponentLink(setFrom, setTo) {
     console.log('HISTORY:', this.props.history);
     this.setState({ from: setFrom + '#' }, () => {
       this.props.history.push(setTo);
     });
-  };
+  }
 
   render() {
     if (this.state.isLoading) {
@@ -259,7 +264,7 @@ class Navigation extends Component {
                     </Nav.Link>
                   </NavItem>
                 )}
-                <Button onClick={() => this.logOut()}>Logout</Button>
+                <Button onClick={() => this.logout()}>Logout</Button>
               </Nav>
             </Navbar.Collapse>
           </Navbar>
@@ -283,6 +288,7 @@ class Navigation extends Component {
               component={Forgot}
               from={this.state.from}
               user={this.state.user}
+              onForgotFormSubmit={this.onForgotFormSubmit}
               rerouteWithComponentLink={this.rerouteWithComponentLink}
               errorPassedOn={this.state.errorPassedOn}
               routePermissions={['guest']}
